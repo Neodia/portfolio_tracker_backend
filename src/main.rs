@@ -18,12 +18,7 @@ async fn main() -> Result<(), reqwest::Error> {
         .get_simple_price(&["bitcoin", "ethereum"], &["usd", "eur"])
         .await?;
 
-    for (coin, prices) in &response.0 {
-        println!("{coin}:");
-        for (currency, price) in prices {
-            println!("  {currency}: {price}");
-        }
-    }
+    println!("{}", response);
 
     Ok(())
 }
