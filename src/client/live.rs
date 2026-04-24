@@ -1,6 +1,11 @@
 use super::client::CGClient;
-use super::model::{GetSimplePriceRequest, GetSimplePriceResponse};
-use reqwest::{Client, Error};
+use super::model::{GetPricesFromNetworkResponse, GetSimplePriceRequest, GetSimplePriceResponse};
+use crate::client::cg_model::CGGetPricesFromNetworkResponse;
+use crate::client::error::ClientError;
+use crate::client::util::join_as_csv;
+use crate::model::Network;
+use crate::model::contract::Contract;
+use reqwest::Client;
 
 pub struct LiveCGClient {
     base_url: String,
@@ -9,12 +14,17 @@ pub struct LiveCGClient {
 }
 
 impl LiveCGClient {
-    pub fn new(base_url: String, cg_key: String, client: Client) -> LiveCGClient {
+    pub fn new(base_url: String, cg_key: String) -> LiveCGClient {
         Self {
             base_url,
             cg_key,
-            client,
+            client: Client::new(),
         }
+    }
+    fn get(&self, url: String) -> reqwest::RequestBuilder {
+        self.client
+            .get(url)
+            .header("x-cg-demo-api-key", &self.cg_key)
     }
 }
 
@@ -23,17 +33,38 @@ impl CGClient for LiveCGClient {
         &self,
         ids: &[&str],
         vs_currencies: &[&str],
-    ) -> Result<GetSimplePriceResponse, Error> {
-        self.client
-            .get(format!("{0}/simple/price", self.base_url))
+    ) -> Result<GetSimplePriceResponse, ClientError> {
+        let response = self
+            .get(format!("{}/simple/price", self.base_url))
             .query(&GetSimplePriceRequest::new(
                 ids.to_vec(),
                 vs_currencies.to_vec(),
             ))
-            .header("x-cg-demo-api-key", self.cg_key.as_str())
             .send()
             .await?
             .json::<GetSimplePriceResponse>()
-            .await
+            .await?;
+
+        Ok(response)
+    }
+
+    async fn get_prices_from_network(
+        &self,
+        network: Network,
+        contracts: &[Contract],
+    ) -> Result<GetPricesFromNetworkResponse, ClientError> {
+        let response = self
+            .get(format!(
+                "{}/onchain/networks/{}/tokens/multi/{}",
+                self.base_url,
+                network,
+                join_as_csv(contracts)
+            ))
+            .send()
+            .await?
+            .json::<CGGetPricesFromNetworkResponse>()
+            .await?;
+
+        Ok(response.into())
     }
 }
