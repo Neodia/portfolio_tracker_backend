@@ -1,10 +1,14 @@
+use crate::repository::DBError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum ClientError {
+pub enum AppError {
     #[error("HTTP error: {0}")]
-    Http(#[from] reqwest::Error),
+    HttpError(#[from] reqwest::Error),
 
-    #[error("ParsingError: {0}")]
-    ParsingError(String),
+    #[error("Var parsing error: {0}")]
+    VarError(#[from] std::env::VarError),
+
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] DBError),
 }

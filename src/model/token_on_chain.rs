@@ -1,7 +1,7 @@
-use std::fmt::{Display, Formatter};
-use serde::{Deserialize, Serialize};
-use crate::model::contract::Contract;
 use crate::model::Symbol;
+use crate::model::contract::Contract;
+use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TokenOnChain {

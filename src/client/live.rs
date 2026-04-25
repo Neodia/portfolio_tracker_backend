@@ -1,10 +1,10 @@
 use super::client::CGClient;
-use super::model::{GetPricesFromNetworkResponse, GetSimplePriceRequest, GetSimplePriceResponse};
+use super::model::GetPricesFromNetworkResponse;
 use crate::client::cg_model::CGGetPricesFromNetworkResponse;
-use crate::client::error::ClientError;
 use crate::client::util::join_as_csv;
 use crate::model::Network;
 use crate::model::contract::Contract;
+use crate::model::error::AppError;
 use reqwest::Client;
 
 pub struct LiveCGClient {
@@ -29,36 +29,17 @@ impl LiveCGClient {
 }
 
 impl CGClient for LiveCGClient {
-    async fn get_simple_price(
-        &self,
-        ids: &[&str],
-        vs_currencies: &[&str],
-    ) -> Result<GetSimplePriceResponse, ClientError> {
-        let response = self
-            .get(format!("{}/simple/price", self.base_url))
-            .query(&GetSimplePriceRequest::new(
-                ids.to_vec(),
-                vs_currencies.to_vec(),
-            ))
-            .send()
-            .await?
-            .json::<GetSimplePriceResponse>()
-            .await?;
-
-        Ok(response)
-    }
-
     async fn get_prices_from_network(
         &self,
         network: Network,
-        contracts: &[Contract],
-    ) -> Result<GetPricesFromNetworkResponse, ClientError> {
+        contracts: Vec<Contract>,
+    ) -> Result<GetPricesFromNetworkResponse, AppError> {
         let response = self
             .get(format!(
                 "{}/onchain/networks/{}/tokens/multi/{}",
                 self.base_url,
                 network,
-                join_as_csv(contracts)
+                join_as_csv(&contracts)
             ))
             .send()
             .await?

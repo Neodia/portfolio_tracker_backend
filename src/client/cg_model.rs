@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use crate::client::model::GetPricesFromNetworkResponse;
+use crate::model::Symbol;
+use crate::model::contract::Contract;
+use crate::model::token_on_chain::TokenOnChain;
 use rust_decimal::Decimal;
 use serde::Deserialize;
-use crate::client::model::GetPricesFromNetworkResponse;
-use crate::model::contract::Contract;
-use crate::model::Symbol;
-use crate::model::token_on_chain::TokenOnChain;
+use std::collections::HashMap;
 
 #[derive(Deserialize)]
 pub struct CGTokenAttribute {
@@ -14,8 +14,8 @@ pub struct CGTokenAttribute {
 }
 
 #[derive(Deserialize)]
-pub struct CGTokenData{
-    attributes: CGTokenAttribute
+pub struct CGTokenData {
+    attributes: CGTokenAttribute,
 }
 
 impl From<CGTokenData> for (TokenOnChain, Decimal) {
@@ -26,14 +26,18 @@ impl From<CGTokenData> for (TokenOnChain, Decimal) {
 }
 
 #[derive(Deserialize)]
-pub struct CGGetPricesFromNetworkResponse{
+pub struct CGGetPricesFromNetworkResponse {
     data: Vec<CGTokenData>,
 }
 
 impl From<CGGetPricesFromNetworkResponse> for GetPricesFromNetworkResponse {
     fn from(value: CGGetPricesFromNetworkResponse) -> Self {
         GetPricesFromNetworkResponse {
-            prices: value.data.into_iter().map(|data| data.into()).collect::<HashMap<TokenOnChain, Decimal>>()
+            prices: value
+                .data
+                .into_iter()
+                .map(|data| data.into())
+                .collect::<HashMap<TokenOnChain, Decimal>>(),
         }
     }
 }
