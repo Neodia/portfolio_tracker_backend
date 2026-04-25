@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Contract(String);
+pub struct Contract(pub String);
 
 impl Display for Contract {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

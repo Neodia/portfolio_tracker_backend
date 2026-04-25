@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-use std::iter::Cloned;
 use strum::IntoEnumIterator;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, strum::EnumIter)]

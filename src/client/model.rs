@@ -1,4 +1,4 @@
-use crate::model::token_on_chain::TokenOnChain;
+use crate::model::BlockchainAsset;
 use rust_decimal::Decimal;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Deserialize, Debug)]
 pub struct GetPricesFromNetworkResponse {
-    pub prices: HashMap<TokenOnChain, Decimal>,
+    pub prices: HashMap<BlockchainAsset, Decimal>,
 }
 
 impl Display for GetPricesFromNetworkResponse {

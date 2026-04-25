@@ -46,6 +46,6 @@ impl CGClient for LiveCGClient {
             .json::<CGGetPricesFromNetworkResponse>()
             .await?;
 
-        Ok(response.into())
+        Ok(response.into_domain(network))
     }
 }

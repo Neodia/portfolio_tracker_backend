@@ -3,7 +3,8 @@ pub mod contract;
 pub mod error;
 mod network;
 mod symbol;
-pub mod token_on_chain;
+#[cfg(test)]
+mod tests;
 
 pub use blockchain_asset::*;
 pub use contract::*;
