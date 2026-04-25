@@ -1,8 +1,9 @@
 use super::util::*;
 use crate::client::cg_model::{CGTokenAttribute, CGTokenData};
+use crate::client::mapper::map_cg_to_domain;
 use crate::model::{BlockchainAsset, Contract, Network, Symbol};
-use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
+use rust_decimal::Decimal;
 
 #[test]
 fn join_as_csv_joins_with_comma() {
@@ -31,7 +32,7 @@ fn map_cg_to_domain_works() {
                 attributes: CGTokenAttribute {
                     symbol: symbol.clone(),
                     address: contract.clone(),
-                    price_usd: price_usd.clone()
+                    price_usd
                 }
             },
             network.clone()

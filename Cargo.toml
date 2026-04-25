@@ -14,3 +14,7 @@ dotenvy = "0.15"
 itertools = "0.14"
 futures = "0.3.32"
 strum = { version = "0.26", features = ["derive"] }
+
+[dev-dependencies]
+wiremock = "0.6"
+tokio-test = "0.4"

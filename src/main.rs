@@ -37,11 +37,11 @@ async fn main() -> Result<(), AppError> {
 
     let all_token_prices = try_join_all(prices_per_asset_f).await?;
     for token_prices_per_network in all_token_prices {
-        for (token_on_chain, price) in token_prices_per_network.prices {
+        for (blockchain_asset, price) in token_prices_per_network.prices {
             println!(
                 "{}({}): {}",
-                token_on_chain.symbol,
-                token_on_chain.contract,
+                blockchain_asset.symbol,
+                blockchain_asset.contract,
                 price
             );
         }

@@ -1,0 +1,190 @@
+use portfolio_tracker_backend::client::*;
+use portfolio_tracker_backend::model::*;
+use portfolio_tracker_backend::client::ClientError;
+use rust_decimal::Decimal;
+use rust_decimal::prelude::FromPrimitive;
+use std::collections::HashMap;
+use reqwest::StatusCode;
+use wiremock::matchers::{method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
+
+#[tokio::test]
+async fn get_prices_per_network_returns_mapped_response() {
+    let mock_server = MockServer::start().await;
+    let body = std::fs::read_to_string("tests/fixtures/get_prices_from_network_200.json")
+        .expect("fixture file not found");
+
+    let network = Network::Solana;
+    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
+    let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+
+    Mock::given(method("GET"))
+        .and(path(format!(
+            "/onchain/networks/solana/tokens/multi/{},{}",
+            trump_contract.clone(),
+            soracat_contract.clone()
+        )))
+        .respond_with(ResponseTemplate::new(200).set_body_raw(body, "application/json"))
+        .mount(&mock_server)
+        .await;
+
+    let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
+    let response = client
+        .get_prices_from_network(
+            network.clone(),
+            vec![trump_contract.clone(), soracat_contract.clone()],
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(
+        response.prices,
+        HashMap::from([
+            (
+                BlockchainAsset::new(
+                    Symbol("SORACAT".into()),
+                    network.clone(),
+                    soracat_contract.clone()
+                ),
+                Decimal::from_f64(0.000006746080385f64).unwrap()
+            ),
+            (
+                BlockchainAsset::new(
+                    Symbol("TRUMP".into()),
+                    network.clone(),
+                    trump_contract.clone()
+                ),
+                Decimal::from_f64(7.7593694175f64).unwrap()
+            ),
+        ])
+    );
+}
+
+#[tokio::test]
+async fn get_prices_per_network_http_fails() {
+
+    let client = LiveCGClient::new("whatever_fake_server.com".into(), "fake_key".into());
+    let response = client
+        .get_prices_from_network(
+            Network::Solana,
+            vec!["whatever".into()],
+        )
+        .await;
+    assert!(matches!(response, Err(ClientError::HttpError(_))))
+}
+
+#[tokio::test]
+async fn get_prices_per_network_unauthorized() {
+    let mock_server = MockServer::start().await;
+
+    let network = Network::Solana;
+    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
+    let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+
+    Mock::given(method("GET"))
+        .and(path(format!(
+            "/onchain/networks/solana/tokens/multi/{},{}",
+            trump_contract.clone(),
+            soracat_contract.clone()
+        )))
+        .respond_with(ResponseTemplate::new(StatusCode::UNAUTHORIZED))
+        .mount(&mock_server)
+        .await;
+
+    let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
+    let response = client
+        .get_prices_from_network(
+            network.clone(),
+            vec![trump_contract.clone(), soracat_contract.clone()],
+        )
+        .await;
+
+    assert!(matches!(response, Err(ClientError::Unauthorized)));
+}
+
+#[tokio::test]
+async fn get_prices_per_network_rate_limited() {
+    let mock_server = MockServer::start().await;
+
+    let network = Network::Solana;
+    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
+    let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+
+    Mock::given(method("GET"))
+        .and(path(format!(
+            "/onchain/networks/solana/tokens/multi/{},{}",
+            trump_contract.clone(),
+            soracat_contract.clone()
+        )))
+        .respond_with(ResponseTemplate::new(StatusCode::TOO_MANY_REQUESTS))
+        .mount(&mock_server)
+        .await;
+
+    let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
+    let response = client
+        .get_prices_from_network(
+            network.clone(),
+            vec![trump_contract.clone(), soracat_contract.clone()],
+        )
+        .await;
+
+    assert!(matches!(response, Err(ClientError::RateLimited)));
+}
+
+#[tokio::test]
+async fn get_prices_per_network_not_found() {
+    let mock_server = MockServer::start().await;
+
+    let network = Network::Solana;
+    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
+    let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+
+    Mock::given(method("GET"))
+        .and(path(format!(
+            "/onchain/networks/solana/tokens/multi/{},{}",
+            trump_contract.clone(),
+            soracat_contract.clone()
+        )))
+        .respond_with(ResponseTemplate::new(StatusCode::NOT_FOUND))
+        .mount(&mock_server)
+        .await;
+
+    let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
+    let response = client
+        .get_prices_from_network(
+            network.clone(),
+            vec![trump_contract.clone(), soracat_contract.clone()],
+        )
+        .await;
+
+    assert!(matches!(response, Err(ClientError::NotFound)));
+}
+
+#[tokio::test]
+async fn get_prices_per_network_unexpected() {
+    let mock_server = MockServer::start().await;
+
+    let network = Network::Solana;
+    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
+    let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+
+    Mock::given(method("GET"))
+        .and(path(format!(
+            "/onchain/networks/solana/tokens/multi/{},{}",
+            trump_contract.clone(),
+            soracat_contract.clone()
+        )))
+        .respond_with(ResponseTemplate::new(StatusCode::INTERNAL_SERVER_ERROR))
+        .mount(&mock_server)
+        .await;
+
+    let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
+    let response = client
+        .get_prices_from_network(
+            network.clone(),
+            vec![trump_contract.clone(), soracat_contract.clone()],
+        )
+        .await;
+
+    assert!(matches!(response, Err(ClientError::Unexpected(500))));
+}

@@ -1,16 +1,6 @@
-
-
-use std::fmt::Display;
 use rust_decimal::Decimal;
 use crate::client::cg_model::CGTokenData;
 use crate::model::{BlockchainAsset, Network};
-
-pub fn join_as_csv<T: Display>(v: &[T]) -> String {
-    v.iter()
-        .map(|c| c.to_string())
-        .collect::<Vec<_>>()
-        .join(",")
-}
 
 pub fn map_cg_to_domain(
     cg_token_data: CGTokenData,

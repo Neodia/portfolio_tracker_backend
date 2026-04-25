@@ -1,6 +1,8 @@
 use crate::model::BlockchainAsset;
 use crate::repository::DBError;
+use std::future::Future;
 
-pub(crate) trait Repository {
-    async fn get_all_assets(&self) -> Result<Vec<BlockchainAsset>, DBError>;
+
+pub trait Repository {
+    fn get_all_assets(&self) -> impl Future<Output = Result<Vec<BlockchainAsset>, DBError>>;
 }

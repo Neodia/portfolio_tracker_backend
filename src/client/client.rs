@@ -1,12 +1,13 @@
 use super::model::GetPricesFromNetworkResponse;
-use crate::model::Network;
+use crate::client::ClientError;
 use crate::model::contract::Contract;
-use crate::model::error::AppError;
+use crate::model::Network;
+use std::future::Future;
 
 pub trait CGClient {
-    async fn get_prices_from_network(
+    fn get_prices_from_network(
         &self,
         network: Network,
         contracts: Vec<Contract>,
-    ) -> Result<GetPricesFromNetworkResponse, AppError>;
+    ) -> impl Future<Output = Result<GetPricesFromNetworkResponse, ClientError>>;
 }

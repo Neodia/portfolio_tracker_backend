@@ -1,11 +1,11 @@
 use super::client::CGClient;
 use super::model::GetPricesFromNetworkResponse;
 use crate::client::cg_model::CGGetPricesFromNetworkResponse;
-use crate::client::util::join_as_csv;
-use crate::model::Network;
+use crate::client::error::ClientError;
+use crate::client::util::{join_as_csv, WithEnrichment};
 use crate::model::contract::Contract;
-use crate::model::error::AppError;
-use reqwest::Client;
+use crate::model::Network;
+use reqwest::{Client, StatusCode};
 
 pub struct LiveCGClient {
     base_url: String,
@@ -21,10 +21,33 @@ impl LiveCGClient {
             client: Client::new(),
         }
     }
-    fn get(&self, url: String) -> reqwest::RequestBuilder {
-        self.client
+
+    async fn get<
+        Enrichment,
+        Intermediate: WithEnrichment<Enrichment, Response> + serde::de::DeserializeOwned,
+        Response,
+    >(
+        &self,
+        url: String,
+        enrichment: Enrichment,
+    ) -> Result<Response, ClientError> {
+        let response = self
+            .client
             .get(url)
             .header("x-cg-demo-api-key", &self.cg_key)
+            .send()
+            .await?;
+
+        match response.status() {
+            StatusCode::OK => {
+                let response = response.json::<Intermediate>().await?;
+                Ok(response.into_domain(enrichment))
+            }
+            StatusCode::UNAUTHORIZED => Err(ClientError::Unauthorized),
+            StatusCode::NOT_FOUND => Err(ClientError::NotFound),
+            StatusCode::TOO_MANY_REQUESTS => Err(ClientError::RateLimited),
+            s => Err(ClientError::Unexpected(s.as_u16())),
+        }
     }
 }
 
@@ -33,19 +56,16 @@ impl CGClient for LiveCGClient {
         &self,
         network: Network,
         contracts: Vec<Contract>,
-    ) -> Result<GetPricesFromNetworkResponse, AppError> {
-        let response = self
-            .get(format!(
+    ) -> Result<GetPricesFromNetworkResponse, ClientError> {
+        self.get::<_, CGGetPricesFromNetworkResponse, _>(
+            format!(
                 "{}/onchain/networks/{}/tokens/multi/{}",
                 self.base_url,
                 network,
                 join_as_csv(&contracts)
-            ))
-            .send()
-            .await?
-            .json::<CGGetPricesFromNetworkResponse>()
-            .await?;
-
-        Ok(response.into_domain(network))
+            ),
+            network,
+        )
+        .await
     }
 }
