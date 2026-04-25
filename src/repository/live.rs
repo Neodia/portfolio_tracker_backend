@@ -13,6 +13,10 @@ impl AssetRepository {
         let pool = PgPool::connect(url).await?;
         Ok(Self { pool })
     }
+
+    pub fn new_from_pool(pool: PgPool) -> Self {
+        Self { pool }
+    }
 }
 
 impl Repository for AssetRepository {

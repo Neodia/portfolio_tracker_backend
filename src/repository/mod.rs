@@ -6,3 +6,4 @@ pub mod repository;
 
 pub use error::*;
 pub use live::*;
+pub use repository::*;
