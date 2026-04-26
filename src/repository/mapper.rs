@@ -6,10 +6,11 @@ impl TryFrom<BlockchainAssetDTO> for BlockchainAsset {
     type Error = DBError;
 
     fn try_from(value: BlockchainAssetDTO) -> Result<Self, Self::Error> {
-        let network = Network::from_id(value.chain.as_str())
-            .ok_or(DBError::NetworkDeserializeError(value.chain))?;
+        let network = Network::from_id(value.network.as_str())
+            .ok_or(DBError::NetworkDeserializeError(value.network))?;
         Ok(BlockchainAsset::new(
-            value.ticker,
+            value.symbol,
+            value.name,
             network,
             value.contract_address,
         ))

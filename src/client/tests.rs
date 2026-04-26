@@ -23,6 +23,7 @@ fn join_as_csv_empty() {
 #[test]
 fn map_cg_to_domain_works() {
     let symbol = Symbol("BTC".to_string());
+    let name = "Bitcoin".to_string();
     let contract = Contract("0x123".to_string());
     let network = Network::Bitcoin;
     let price_usd = Decimal::from_f64(75_000f64).unwrap();
@@ -31,12 +32,13 @@ fn map_cg_to_domain_works() {
             CGTokenData {
                 attributes: CGTokenAttribute {
                     symbol: symbol.clone(),
+                    name: name.clone(),
                     address: contract.clone(),
                     price_usd
                 }
             },
             network.clone()
         ),
-        (BlockchainAsset::new(symbol, network, contract), price_usd)
+        (BlockchainAsset::new(symbol, name, network, contract), price_usd)
     )
 }

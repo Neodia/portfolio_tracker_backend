@@ -11,6 +11,7 @@ use crate::client::util::WithEnrichment;
 pub struct CGTokenAttribute {
     pub address: Contract,
     pub symbol: Symbol,
+    pub name: String,
     pub price_usd: Decimal,
 }
 

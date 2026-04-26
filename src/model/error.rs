@@ -12,4 +12,7 @@ pub enum AppError {
 
     #[error("Database error: {0}")]
     DatabaseError(#[from] DBError),
+    
+    #[error("Network parsing error: unknown {0} network")]
+    NetworkParsingError(String),
 }

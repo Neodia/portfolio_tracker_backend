@@ -1,6 +1,7 @@
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::postgres::Postgres;
 use sqlx::PgPool;
+use testcontainers::ImageExt;
 
 pub struct DBFixture {
     pub pool: PgPool,
@@ -9,7 +10,7 @@ pub struct DBFixture {
 
 impl DBFixture {
     pub async fn new() -> Self {
-        let container = Postgres::default().start().await.unwrap();
+        let container = Postgres::default().with_tag("16").start().await.unwrap();
 
         let url = format!(
             "postgres://postgres:postgres@{}:{}/postgres",
@@ -23,10 +24,10 @@ impl DBFixture {
         Self { pool, _container: container }
     }
 
-    pub async fn insert_assert(&self, ticker: &str, chain: &str, contract: &str) {
+    pub async fn insert_assert(&self, symbol: &str, name: &str, network: &str, contract: &str) {
         sqlx::query!(
-            "INSERT INTO assets (ticker, chain, contract_address) VALUES ($1, $2, $3)",
-            ticker, chain, contract
+            "INSERT INTO assets (symbol, name, network, contract_address) VALUES ($1, $2, $3, $4)",
+            symbol, name, network, contract
         )
             .execute(&self.pool)
             .await

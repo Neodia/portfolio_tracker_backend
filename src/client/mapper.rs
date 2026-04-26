@@ -9,6 +9,7 @@ pub fn map_cg_to_domain(
     (
         BlockchainAsset::new(
             cg_token_data.attributes.symbol,
+            cg_token_data.attributes.name,
             network,
             cg_token_data.attributes.address,
         ),

@@ -5,14 +5,16 @@ use serde::Deserialize;
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone)]
 pub struct BlockchainAsset {
     pub symbol: Symbol,
+    pub name: String,
     pub network: Network,
     pub contract: Contract,
 }
 
 impl BlockchainAsset {
-    pub fn new(symbol: Symbol, network: Network, contract: Contract) -> Self {
+    pub fn new(symbol: Symbol, name: String, network: Network, contract: Contract) -> Self {
         Self {
             symbol,
+            name,
             network,
             contract,
         }

@@ -23,7 +23,7 @@ impl Repository for AssetRepository {
     async fn get_all_assets(&self) -> Result<Vec<BlockchainAsset>, DBError> {
         let result = sqlx::query_as!(
             BlockchainAssetDTO,
-            "SELECT ticker, chain, contract_address FROM assets",
+            "SELECT id as _id, symbol, name, network, contract_address FROM assets",
         )
         .fetch_all(&self.pool)
         .await?

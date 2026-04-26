@@ -43,6 +43,7 @@ async fn get_prices_per_network_returns_mapped_response() {
             (
                 BlockchainAsset::new(
                     Symbol("SORACAT".into()),
+                    "SORACAT".to_string(),
                     network.clone(),
                     soracat_contract.clone()
                 ),
@@ -51,6 +52,7 @@ async fn get_prices_per_network_returns_mapped_response() {
             (
                 BlockchainAsset::new(
                     Symbol("TRUMP".into()),
+                    "OFFICIAL TRUMP".to_string(),
                     network.clone(),
                     trump_contract.clone()
                 ),
