@@ -2,16 +2,16 @@ mod client;
 mod model;
 mod repository;
 
-use crate::client::LiveCGClient;
-use crate::model::contract::Contract;
-use crate::model::{BlockchainAsset, Network};
-use crate::repository::AssetRepository;
-use crate::repository::repository::Repository;
+use crate::client::live::LiveCGClient;
+use crate::model::Contract;
+use crate::model::{Asset, Network};
+use crate::repository::live::AssetRepository;
+use crate::repository::Repository;
 use client::CGClient;
 use dotenvy::dotenv;
 use futures::future::try_join_all;
 use itertools::Itertools;
-use model::error::AppError;
+use crate::model::error::AppError;
 use std::collections::HashMap;
 
 #[tokio::main]
@@ -26,23 +26,23 @@ async fn main() -> Result<(), AppError> {
     let repo = AssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
     let assets = repo.get_all_assets().await?;
 
-    let assets_per_network: HashMap<Network, Vec<BlockchainAsset>> = assets
+    let assets_per_network: HashMap<Network, Vec<Asset>> = assets
         .into_iter()
         .into_group_map_by(|asset| asset.network.clone());
 
     let prices_per_asset_f = assets_per_network.into_iter().map(|(network, assets)| {
-        let contracts: Vec<Contract> = assets.iter().map(|a| a.contract.clone()).collect();
+        let contracts: Vec<Contract> = assets.iter().map(|a| a.contract_address.clone()).collect();
         live_client.get_prices_from_network(network, contracts)
     });
 
     let all_token_prices = try_join_all(prices_per_asset_f).await?;
     for token_prices_per_network in all_token_prices {
-        for (blockchain_asset, price) in token_prices_per_network.prices {
+        for blockchain_asset_price in token_prices_per_network.prices {
             println!(
                 "{}({}): {}",
-                blockchain_asset.symbol,
-                blockchain_asset.contract,
-                price
+                blockchain_asset_price.symbol,
+                blockchain_asset_price.contract,
+                blockchain_asset_price.price,
             );
         }
     }

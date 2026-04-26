@@ -1,5 +1,5 @@
-use crate::model::BlockchainAsset;
-use crate::repository::DBError;
+use crate::model::Asset;
+use crate::repository::error::DBError;
 use crate::repository::model::BlockchainAssetDTO;
 use crate::repository::repository::Repository;
 use sqlx::PgPool;
@@ -20,16 +20,16 @@ impl AssetRepository {
 }
 
 impl Repository for AssetRepository {
-    async fn get_all_assets(&self) -> Result<Vec<BlockchainAsset>, DBError> {
+    async fn get_all_assets(&self) -> Result<Vec<Asset>, DBError> {
         let result = sqlx::query_as!(
             BlockchainAssetDTO,
-            "SELECT id as _id, symbol, name, network, contract_address FROM assets",
+            "SELECT id, symbol, name, network, contract_address FROM assets",
         )
         .fetch_all(&self.pool)
         .await?
         .into_iter()
-        .map(BlockchainAsset::try_from)
-        .collect::<Result<Vec<BlockchainAsset>, DBError>>()?;
+        .map(TryInto::try_into)
+        .collect::<Result<Vec<Asset>, DBError>>()?;
 
         Ok(result)
     }

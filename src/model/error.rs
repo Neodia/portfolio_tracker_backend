@@ -1,5 +1,5 @@
-use crate::client::ClientError;
-use crate::repository::DBError;
+use crate::client::error::ClientError;
+use crate::repository::error::DBError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -12,7 +12,4 @@ pub enum AppError {
 
     #[error("Database error: {0}")]
     DatabaseError(#[from] DBError),
-    
-    #[error("Network parsing error: unknown {0} network")]
-    NetworkParsingError(String),
 }

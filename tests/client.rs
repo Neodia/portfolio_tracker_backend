@@ -1,10 +1,11 @@
-use portfolio_tracker_backend::client::*;
+use portfolio_tracker_backend::client::CGClient;
+use portfolio_tracker_backend::client::live::LiveCGClient;
+use portfolio_tracker_backend::client::error::ClientError;
+use portfolio_tracker_backend::client::model::BlockchainAssetPrice;
 use portfolio_tracker_backend::model::*;
-use portfolio_tracker_backend::client::ClientError;
-use rust_decimal::Decimal;
-use rust_decimal::prelude::FromPrimitive;
-use std::collections::HashMap;
 use reqwest::StatusCode;
+use rust_decimal::prelude::FromPrimitive;
+use rust_decimal::Decimal;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -39,32 +40,27 @@ async fn get_prices_per_network_returns_mapped_response() {
 
     assert_eq!(
         response.prices,
-        HashMap::from([
-            (
-                BlockchainAsset::new(
-                    Symbol("SORACAT".into()),
-                    "SORACAT".to_string(),
-                    network.clone(),
-                    soracat_contract.clone()
-                ),
-                Decimal::from_f64(0.000006746080385f64).unwrap()
+        vec!(
+            BlockchainAssetPrice::new(
+                Symbol("TRUMP".into()),
+                "OFFICIAL TRUMP".to_string(),
+                network.clone(),
+                trump_contract.clone(),
+                Decimal::from_f64(7.7593694175f64).unwrap(),
             ),
-            (
-                BlockchainAsset::new(
-                    Symbol("TRUMP".into()),
-                    "OFFICIAL TRUMP".to_string(),
-                    network.clone(),
-                    trump_contract.clone()
-                ),
-                Decimal::from_f64(7.7593694175f64).unwrap()
+            BlockchainAssetPrice::new(
+                Symbol("SORACAT".into()),
+                "SORACAT".to_string(),
+                network.clone(),
+                soracat_contract.clone(),
+                Decimal::from_f64(0.000006746080385f64).unwrap(),
             ),
-        ])
+        )
     );
 }
 
 #[tokio::test]
 async fn get_prices_per_network_http_fails() {
-
     let client = LiveCGClient::new("whatever_fake_server.com".into(), "fake_key".into());
     let response = client
         .get_prices_from_network(

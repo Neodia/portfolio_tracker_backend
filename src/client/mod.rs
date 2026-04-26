@@ -1,13 +1,10 @@
 mod cg_model;
 mod client;
-mod live;
-mod model;
-mod util;
+pub use client::CGClient;
+pub mod error;
+pub mod live;
+mod mapper;
+pub mod model;
 #[cfg(test)]
 mod tests;
-mod error;
-mod mapper;
-
-pub use client::*;
-pub use live::*;
-pub use error::*;
+mod util;

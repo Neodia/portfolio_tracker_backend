@@ -1,6 +1,7 @@
-use portfolio_tracker_backend::model::{BlockchainAsset, Contract, Network};
-use portfolio_tracker_backend::repository::AssetRepository;
+use portfolio_tracker_backend::model::{Asset, Contract, Network};
+use portfolio_tracker_backend::repository::live::AssetRepository;
 use portfolio_tracker_backend::repository::Repository;
+use uuid::Uuid;
 
 mod common;
 
@@ -19,7 +20,8 @@ async fn get_all_assets_returns_data() {
 
     assert_eq!(
         assets,
-        vec!(BlockchainAsset::new(
+        vec!(Asset::new(
+            Uuid::nil(),
             symbol.to_string().into(),
             name.to_string(),
             Network::Bitcoin,

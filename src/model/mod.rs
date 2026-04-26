@@ -1,12 +1,12 @@
-pub mod blockchain_asset;
-pub mod contract;
+mod contract;
 pub mod error;
 mod network;
 mod symbol;
+mod asset;
 #[cfg(test)]
 mod tests;
 
-pub use blockchain_asset::*;
 pub use contract::*;
 pub use network::*;
 pub use symbol::*;
+pub use asset::*;

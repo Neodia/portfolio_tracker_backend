@@ -1,7 +1,8 @@
 use super::util::*;
 use crate::client::cg_model::{CGTokenAttribute, CGTokenData};
 use crate::client::mapper::map_cg_to_domain;
-use crate::model::{BlockchainAsset, Contract, Network, Symbol};
+use crate::client::model::BlockchainAssetPrice;
+use crate::model::{Contract, Network, Symbol};
 use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::Decimal;
 
@@ -39,6 +40,6 @@ fn map_cg_to_domain_works() {
             },
             network.clone()
         ),
-        (BlockchainAsset::new(symbol, name, network, contract), price_usd)
+        BlockchainAssetPrice::new(symbol, name, network, contract, price_usd)
     )
 }

@@ -3,7 +3,7 @@ use super::model::GetPricesFromNetworkResponse;
 use crate::client::cg_model::CGGetPricesFromNetworkResponse;
 use crate::client::error::ClientError;
 use crate::client::util::{join_as_csv, WithEnrichment};
-use crate::model::contract::Contract;
+use crate::model::Contract;
 use crate::model::Network;
 use reqwest::{Client, StatusCode};
 

@@ -1,11 +1,10 @@
 use crate::client::mapper::map_cg_to_domain;
-use crate::client::model::GetPricesFromNetworkResponse;
-use crate::model::contract::Contract;
-use crate::model::{BlockchainAsset, Network, Symbol};
+use crate::client::model::{BlockchainAssetPrice, GetPricesFromNetworkResponse};
+use crate::client::util::WithEnrichment;
+use crate::model::Contract;
+use crate::model::{Network, Symbol};
 use rust_decimal::Decimal;
 use serde::Deserialize;
-use std::collections::HashMap;
-use crate::client::util::WithEnrichment;
 
 #[derive(Deserialize)]
 pub struct CGTokenAttribute {
@@ -32,7 +31,7 @@ impl WithEnrichment<Network, GetPricesFromNetworkResponse> for CGGetPricesFromNe
                 .data
                 .into_iter()
                 .map(|cg_token_data| map_cg_to_domain(cg_token_data, network.clone()))
-                .collect::<HashMap<BlockchainAsset, Decimal>>(),
+                .collect::<Vec<BlockchainAssetPrice>>(),
         }
     }
 }

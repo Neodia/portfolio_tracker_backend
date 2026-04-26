@@ -1,6 +1,6 @@
 use super::model::GetPricesFromNetworkResponse;
-use crate::client::ClientError;
-use crate::model::contract::Contract;
+use crate::client::error::ClientError;
+use crate::model::Contract;
 use crate::model::Network;
 use std::future::Future;
 

@@ -1,4 +1,3 @@
-use crate::model::error::AppError;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use strum::IntoEnumIterator;
@@ -43,13 +42,5 @@ impl Network {
 impl Display for Network {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.to_id())
-    }
-}
-
-impl TryFrom<String> for Network {
-    type Error = AppError;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Network::from_id(value.as_str()).ok_or(AppError::NetworkParsingError(value))
     }
 }
