@@ -1,4 +1,4 @@
-use crate::repository::live::AssetRepository;
+use crate::repository::live::LiveAssetRepository;
 use crate::service::asset::AssetService;
 
 pub mod asset;
@@ -7,5 +7,5 @@ pub mod asset;
 
 #[derive(Clone)]
 pub struct Services {
-    pub asset_service: AssetService<AssetRepository>,
+    pub asset_service: AssetService<LiveAssetRepository>,
 }

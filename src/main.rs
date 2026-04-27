@@ -8,8 +8,8 @@ mod appstate;
 use crate::client::live::LiveCGClient;
 use crate::model::Contract;
 use crate::model::{Asset, Network};
-use crate::repository::live::AssetRepository;
-use crate::repository::Repository;
+use crate::repository::live::LiveAssetRepository;
+use crate::repository::AssetRepository;
 use client::CGClient;
 use dotenvy::dotenv;
 use futures::future::try_join_all;
@@ -23,7 +23,7 @@ use crate::appstate::AppState;
 async fn main() -> Result<(), AppError> {
     dotenv().ok();
 
-    let repo = AssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
+    let repo = LiveAssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
 
     let state = AppState::new(repo);
 
@@ -42,7 +42,7 @@ async fn _pull_prices_from_cg() -> Result<(), AppError> {
         std::env::var("CG_KEY").expect("CG_KEY must be set"),
     );
 
-    let repo = AssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
+    let repo = LiveAssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
     let assets = repo.get_all_assets().await?;
 
     let assets_per_network: HashMap<Network, Vec<Asset>> = assets

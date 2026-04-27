@@ -1,16 +1,16 @@
 use crate::model::Asset;
 use crate::repository::error::DBError;
 use crate::repository::model::BlockchainAssetDTO;
-use crate::repository::repository::Repository;
+use crate::repository::repository::AssetRepository;
 use sqlx::PgPool;
 
 #[derive(Clone)]
-pub struct AssetRepository {
+pub struct LiveAssetRepository {
     pool: PgPool,
 }
 
-impl AssetRepository {
-    pub async fn new(url: &str) -> Result<AssetRepository, DBError> {
+impl LiveAssetRepository {
+    pub async fn new(url: &str) -> Result<LiveAssetRepository, DBError> {
         let pool = PgPool::connect(url).await?;
         Ok(Self { pool })
     }
@@ -20,7 +20,7 @@ impl AssetRepository {
     }
 }
 
-impl Repository for AssetRepository {
+impl AssetRepository for LiveAssetRepository {
     async fn get_all_assets(&self) -> Result<Vec<Asset>, DBError> {
         let result = sqlx::query_as!(
             BlockchainAssetDTO,

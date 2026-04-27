@@ -1,7 +1,7 @@
 pub mod error;
 pub mod live;
 pub mod repository;
-pub use repository::Repository;
+pub use repository::AssetRepository;
 
 mod mapper;
 mod model;

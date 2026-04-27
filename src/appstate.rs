@@ -1,4 +1,4 @@
-use crate::repository::live::AssetRepository;
+use crate::repository::live::LiveAssetRepository;
 use crate::service::asset::AssetService;
 use crate::service::Services;
 
@@ -8,7 +8,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(repo: AssetRepository) -> Self {
+    pub fn new(repo: LiveAssetRepository) -> Self {
         Self {
             services: Services {
                 asset_service: AssetService::new(repo),
