@@ -53,7 +53,7 @@ pub struct AssetResponse {
 impl From<Asset> for AssetResponse {
     fn from(asset: Asset) -> Self {
         Self {
-            id: asset._id,
+            id: asset.id,
             symbol: asset.symbol,
             name: asset.name,
             network: asset.network.into(),

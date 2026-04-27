@@ -1,18 +1,11 @@
-mod api;
-mod appstate;
-mod client;
-mod model;
-mod repository;
-mod service;
-
-use crate::api::router::create_router;
-use crate::appstate::AppState;
-use crate::client::live::LiveCGClient;
-use crate::model::Contract;
-use crate::model::error::AppError;
-use crate::model::{Asset, Network};
-use crate::repository::{AssetRepository, Repositories};
-use client::CGClient;
+use portfolio_tracker_backend::api::router::create_router;
+use portfolio_tracker_backend::client::live::LiveCGClient;
+use portfolio_tracker_backend::client::CGClient;
+use portfolio_tracker_backend::api::appstate::AppState;
+use portfolio_tracker_backend::model::Contract;
+use portfolio_tracker_backend::model::error::AppError;
+use portfolio_tracker_backend::model::{Asset, Network};
+use portfolio_tracker_backend::repository::{AssetRepository, Repositories};
 use dotenvy::dotenv;
 use futures::future::try_join_all;
 use itertools::Itertools;

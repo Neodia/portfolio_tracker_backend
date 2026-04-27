@@ -27,9 +27,9 @@ impl DBFixture {
         }
     }
 
-    pub async fn insert_assert(&self, symbol: &str, name: &str, network: &str, contract: &str) {
+    pub async fn insert_asset(&self, symbol: &str, name: &str, network: &str, contract: &str) {
         sqlx::query!(
-            "INSERT INTO assets (symbol, name, network, contract_address) VALUES ($1, $2, $3, $4)",
+            "INSERT INTO assets (id, symbol, name, network, contract_address) VALUES (gen_random_uuid(), $1, $2, $3, $4)",
             symbol,
             name,
             network,

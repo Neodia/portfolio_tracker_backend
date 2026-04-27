@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 #[derive(Debug, Eq, Hash, Deserialize, Clone, Serialize)]
 pub struct Asset {
-    pub _id: Uuid,
+    pub id: Uuid,
     pub symbol: Symbol,
     pub name: String,
     pub network: Network,
@@ -14,14 +14,14 @@ pub struct Asset {
 
 impl Asset {
     pub fn new(
-        _id: Uuid,
+        id: Uuid,
         symbol: Symbol,
         name: String,
         network: Network,
         contract_address: Contract,
     ) -> Self {
         Self {
-            _id,
+            id,
             symbol,
             name,
             network,
