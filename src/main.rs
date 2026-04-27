@@ -1,6 +1,9 @@
 mod client;
 mod model;
 mod repository;
+mod api;
+mod service;
+mod appstate;
 
 use crate::client::live::LiveCGClient;
 use crate::model::Contract;
@@ -13,11 +16,27 @@ use futures::future::try_join_all;
 use itertools::Itertools;
 use crate::model::error::AppError;
 use std::collections::HashMap;
+use crate::api::router::create_router;
+use crate::appstate::AppState;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
     dotenv().ok();
 
+    let repo = AssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
+
+    let state = AppState::new(repo);
+
+    let app = create_router(state);
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+    axum::serve(listener, app).await?;
+
+    Ok(())
+}
+
+// Not used, kept as an example for future code
+async fn _pull_prices_from_cg() -> Result<(), AppError> {
     let live_client: LiveCGClient = LiveCGClient::new(
         "https://api.coingecko.com/api/v3".into(),
         std::env::var("CG_KEY").expect("CG_KEY must be set"),

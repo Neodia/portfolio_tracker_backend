@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
 use strum::IntoEnumIterator;
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, strum::EnumIter)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, strum::EnumIter, strum::Display)]
 pub enum Network {
     Bitcoin,
     Ethereum,
@@ -36,11 +35,5 @@ impl Network {
 
     pub fn from_id(id: &str) -> Option<Network> {
         Network::iter().find(|network| network.to_id() == id)
-    }
-}
-
-impl Display for Network {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.to_id())
     }
 }

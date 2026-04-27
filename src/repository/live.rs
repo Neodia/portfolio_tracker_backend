@@ -4,6 +4,7 @@ use crate::repository::model::BlockchainAssetDTO;
 use crate::repository::repository::Repository;
 use sqlx::PgPool;
 
+#[derive(Clone)]
 pub struct AssetRepository {
     pool: PgPool,
 }

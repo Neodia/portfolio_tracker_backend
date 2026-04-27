@@ -7,6 +7,9 @@ pub enum AppError {
     #[error("Client error: {0}")]
     ClientError(#[from] ClientError),
 
+    #[error("IO error: {0}")]
+    IOError(#[from] std::io::Error),
+
     #[error("Var parsing error: {0}")]
     VarError(#[from] std::env::VarError),
 

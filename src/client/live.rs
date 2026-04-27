@@ -61,7 +61,7 @@ impl CGClient for LiveCGClient {
             format!(
                 "{}/onchain/networks/{}/tokens/multi/{}",
                 self.base_url,
-                network,
+                network.to_id(),
                 join_as_csv(&contracts)
             ),
             network,
