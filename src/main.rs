@@ -1,31 +1,33 @@
+mod api;
+mod appstate;
 mod client;
 mod model;
 mod repository;
-mod api;
 mod service;
-mod appstate;
 
+use crate::api::router::create_router;
+use crate::appstate::AppState;
 use crate::client::live::LiveCGClient;
 use crate::model::Contract;
+use crate::model::error::AppError;
 use crate::model::{Asset, Network};
-use crate::repository::live::LiveAssetRepository;
-use crate::repository::AssetRepository;
+use crate::repository::{AssetRepository, Repositories};
 use client::CGClient;
 use dotenvy::dotenv;
 use futures::future::try_join_all;
 use itertools::Itertools;
-use crate::model::error::AppError;
 use std::collections::HashMap;
-use crate::api::router::create_router;
-use crate::appstate::AppState;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
     dotenv().ok();
 
-    let repo = LiveAssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
+    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+    let repositories =
+        Repositories::connect(&std::env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
+            .await?;
 
-    let state = AppState::new(repo);
+    let state = AppState::new(repositories, jwt_secret);
 
     let app = create_router(state);
 
@@ -42,8 +44,9 @@ async fn _pull_prices_from_cg() -> Result<(), AppError> {
         std::env::var("CG_KEY").expect("CG_KEY must be set"),
     );
 
-    let repo = LiveAssetRepository::new(&std::env::var("DATABASE_URL")?).await?;
-    let assets = repo.get_all_assets().await?;
+    let repositories = Repositories::connect(&std::env::var("DATABASE_URL")?).await?;
+
+    let assets = repositories.asset.get_all_assets().await?;
 
     let assets_per_network: HashMap<Network, Vec<Asset>> = assets
         .into_iter()

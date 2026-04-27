@@ -1,5 +1,5 @@
-use uuid::Uuid;
 use crate::model::{Contract, Symbol};
+use uuid::Uuid;
 
 pub struct BlockchainAssetDTO {
     pub id: Uuid,

@@ -1,11 +1,11 @@
 use portfolio_tracker_backend::client::CGClient;
-use portfolio_tracker_backend::client::live::LiveCGClient;
 use portfolio_tracker_backend::client::error::ClientError;
+use portfolio_tracker_backend::client::live::LiveCGClient;
 use portfolio_tracker_backend::client::model::BlockchainAssetPrice;
 use portfolio_tracker_backend::model::*;
 use reqwest::StatusCode;
-use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::Decimal;
+use rust_decimal::prelude::FromPrimitive;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -63,10 +63,7 @@ async fn get_prices_per_network_returns_mapped_response() {
 async fn get_prices_per_network_http_fails() {
     let client = LiveCGClient::new("whatever_fake_server.com".into(), "fake_key".into());
     let response = client
-        .get_prices_from_network(
-            Network::Solana,
-            vec!["whatever".into()],
-        )
+        .get_prices_from_network(Network::Solana, vec!["whatever".into()])
         .await;
     assert!(matches!(response, Err(ClientError::HttpError(_))))
 }

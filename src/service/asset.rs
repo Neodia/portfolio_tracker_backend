@@ -3,12 +3,14 @@ use crate::model::error::AppError;
 use crate::repository::AssetRepository;
 
 #[derive(Clone)]
-pub struct AssetService<R: AssetRepository> {
+pub struct AssetService<R: AssetRepository + Clone> {
     repository: R,
 }
 
 impl<R: AssetRepository> AssetService<R> {
-    pub fn new(repository: R) -> Self { Self { repository } }
+    pub fn new(repository: R) -> Self {
+        Self { repository }
+    }
     pub async fn get_all_assets(&self) -> Result<Vec<Asset>, AppError> {
         Ok(self.repository.get_all_assets().await?)
     }

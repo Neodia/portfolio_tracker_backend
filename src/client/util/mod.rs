@@ -1,5 +1,5 @@
-mod util;
 mod traits;
+mod util;
 
-pub use util::*;
 pub use traits::*;
+pub use util::*;

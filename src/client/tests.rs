@@ -3,8 +3,8 @@ use crate::client::cg_model::{CGTokenAttribute, CGTokenData};
 use crate::client::mapper::map_cg_to_domain;
 use crate::client::model::BlockchainAssetPrice;
 use crate::model::{Contract, Network, Symbol};
-use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::Decimal;
+use rust_decimal::prelude::FromPrimitive;
 
 #[test]
 fn join_as_csv_joins_with_comma() {

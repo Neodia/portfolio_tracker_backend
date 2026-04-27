@@ -1,9 +1,17 @@
-use crate::api::handlers::assets;
+use crate::api::handlers::{assets, auth};
 use crate::appstate::AppState;
-use axum::{routing::get, Router};
+use axum::Router;
+use axum::routing::{get, post};
 
 pub fn create_router(state: AppState) -> Router {
+    let public_routes = Router::new()
+        .route("/register", post(auth::register))
+        .route("/login", post(auth::login));
+
+    let protected_routes = Router::new().route("/assets", get(assets::get_all_assets));
+
     Router::new()
-        .route("/assets", get(assets::get_all_assets))
+        .nest("/auth", public_routes)
+        .nest("/api", protected_routes)
         .with_state(state)
 }

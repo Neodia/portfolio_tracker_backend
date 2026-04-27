@@ -2,6 +2,30 @@ use crate::model::{Asset, Contract, Network, Symbol};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+#[derive(Deserialize, Clone, Debug)]
+pub struct RegisterRequest {
+    pub email: String,
+    pub password: String,
+}
+#[derive(Deserialize, Clone, Debug)]
+pub struct LoginRequest {
+    pub email: String,
+    pub password: String,
+}
+#[derive(Serialize)]
+pub struct TokenResponse {
+    pub token: String,
+    pub token_type: String, // always "Bearer"
+}
+impl TokenResponse {
+    pub fn new(token: String) -> Self {
+        Self {
+            token,
+            token_type: "Bearer".to_string(),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone, Serialize)]
 pub struct NetworkResponse {
     pub id: String,

@@ -41,6 +41,10 @@ impl PartialEq for Asset {
 
 impl Display for Asset {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: {}({})", self.symbol, self.network, self.contract_address)
+        write!(
+            f,
+            "{}: {}({})",
+            self.symbol, self.network, self.contract_address
+        )
     }
 }

@@ -1,11 +1,11 @@
-use testcontainers::runners::AsyncRunner;
-use testcontainers_modules::postgres::Postgres;
 use sqlx::PgPool;
 use testcontainers::ImageExt;
+use testcontainers::runners::AsyncRunner;
+use testcontainers_modules::postgres::Postgres;
 
 pub struct DBFixture {
     pub pool: PgPool,
-    _container: testcontainers::ContainerAsync<Postgres>,  // keep alive
+    _container: testcontainers::ContainerAsync<Postgres>, // keep alive
 }
 
 impl DBFixture {
@@ -21,16 +21,22 @@ impl DBFixture {
         let pool = PgPool::connect(&url).await.unwrap();
         sqlx::migrate!().run(&pool).await.unwrap();
 
-        Self { pool, _container: container }
+        Self {
+            pool,
+            _container: container,
+        }
     }
 
     pub async fn insert_assert(&self, symbol: &str, name: &str, network: &str, contract: &str) {
         sqlx::query!(
             "INSERT INTO assets (symbol, name, network, contract_address) VALUES ($1, $2, $3, $4)",
-            symbol, name, network, contract
+            symbol,
+            name,
+            network,
+            contract
         )
-            .execute(&self.pool)
-            .await
-            .unwrap();
+        .execute(&self.pool)
+        .await
+        .unwrap();
     }
 }

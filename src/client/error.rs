@@ -4,7 +4,7 @@ use thiserror::Error;
 pub enum ClientError {
     #[error("HTTP error: {0}")]
     HttpError(#[from] reqwest::Error),
-    
+
     #[error("ClientError: unauthorized, check your API key")]
     Unauthorized,
 

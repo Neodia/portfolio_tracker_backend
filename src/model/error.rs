@@ -15,4 +15,16 @@ pub enum AppError {
 
     #[error("Database error: {0}")]
     DatabaseError(#[from] DBError),
+
+    #[error("Registration failed: User already exists")]
+    UserAlreadyExistsError,
+
+    #[error("User not found: Invalid email/password combination")]
+    UserNotFoundError,
+
+    #[error("TokenCreationError: {0}")]
+    TokenCreationError(#[from] jsonwebtoken::errors::Error),
+
+    #[error("PasswordError: {0}")]
+    PasswordError(String),
 }

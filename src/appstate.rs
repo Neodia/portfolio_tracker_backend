@@ -1,6 +1,7 @@
-use crate::repository::live::LiveAssetRepository;
-use crate::service::asset::AssetService;
+use crate::repository::Repositories;
 use crate::service::Services;
+use crate::service::asset::AssetService;
+use crate::service::user::UserService;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -8,10 +9,11 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(repo: LiveAssetRepository) -> Self {
+    pub fn new(repositories: Repositories, jwt_secret: String) -> Self {
         Self {
             services: Services {
-                asset_service: AssetService::new(repo),
+                asset_service: AssetService::new(repositories.asset),
+                user_service: UserService::new(repositories.user, jwt_secret),
             },
         }
     }

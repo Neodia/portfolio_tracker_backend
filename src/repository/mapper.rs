@@ -1,7 +1,7 @@
-use crate::repository::error::DBError;
-use crate::repository::model::BlockchainAssetDTO;
 use crate::model::Asset;
 use crate::model::Network;
+use crate::repository::error::DBError;
+use crate::repository::model::BlockchainAssetDTO;
 
 impl TryFrom<BlockchainAssetDTO> for Asset {
     type Error = DBError;

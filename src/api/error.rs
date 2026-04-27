@@ -1,7 +1,7 @@
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::{IntoResponse, Response};
 use crate::model::error::AppError;
+use axum::Json;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
@@ -23,6 +23,20 @@ impl IntoResponse for AppError {
             AppError::VarError(_) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "CONFIG_ERROR",
+                self.to_string(),
+            ),
+            AppError::UserAlreadyExistsError => {
+                (StatusCode::CONFLICT, "CONFLICT", self.to_string())
+            }
+            AppError::UserNotFoundError => (StatusCode::NOT_FOUND, "NOT_FOUND", self.to_string()),
+            AppError::PasswordError(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "PASSWORD_ERROR",
+                self.to_string(),
+            ),
+            AppError::TokenCreationError(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "TOKEN_CREATION_ERROR",
                 self.to_string(),
             ),
         };
