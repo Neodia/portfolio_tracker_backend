@@ -1,5 +1,5 @@
 use crate::api::handlers::{assets, auth};
-use crate::api::appstate::AppState;
+use crate::appstate::AppState;
 use axum::Router;
 use axum::routing::{get, post};
 

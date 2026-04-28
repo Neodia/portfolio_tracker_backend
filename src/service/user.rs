@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Clone)]
-pub struct UserService<R: UserRepository + Clone> {
+pub struct UserService<R: UserRepository> {
     repository: R,
     jwt_secret: String,
 }

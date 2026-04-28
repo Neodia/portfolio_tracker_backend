@@ -1,10 +1,13 @@
-use crate::model::Asset;
 use crate::model::User;
-use crate::repository::AssetRepository;
+use crate::model::{Asset, AssetPrice};
 use crate::repository::UserRepository;
 use crate::repository::error::DBError;
 use crate::repository::model::BlockchainAssetDTO;
-use sqlx::PgPool;
+use crate::repository::{AssetRepository, OutboxRepository, RateRepository};
+use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
+use sqlx::{PgPool, PgTransaction};
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct LiveAssetRepository {
@@ -37,7 +40,6 @@ impl AssetRepository for LiveAssetRepository {
 pub struct LiveUserRepository {
     pool: PgPool,
 }
-
 impl LiveUserRepository {
     pub fn new_from_pool(pool: PgPool) -> Self {
         Self { pool }
@@ -74,5 +76,61 @@ impl UserRepository for LiveUserRepository {
         .await?;
 
         Ok(user)
+    }
+}
+
+#[derive(Clone)]
+pub struct LiveRateRepository {}
+impl LiveRateRepository {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+impl RateRepository for LiveRateRepository {
+    async fn insert_rates(
+        &self,
+        tx: &mut PgTransaction<'_>,
+        rates: Vec<AssetPrice>,
+        now: DateTime<Utc>,
+    ) -> Result<(), DBError> {
+        let asset_ids: Vec<Uuid> = rates.iter().map(|r| r.asset.id).collect();
+        let asset_rates: Vec<Decimal> = rates.iter().map(|r| r.price_usd).collect();
+
+        sqlx::query!(
+            "INSERT INTO rates (asset_id, rate_usd, rate_at)
+     SELECT * FROM UNNEST($1::uuid[], $2::numeric[], $3::timestamptz[])",
+            &asset_ids as &[Uuid],
+            &asset_rates as &[Decimal],
+            &vec![now; asset_ids.len()] as &[DateTime<Utc>]
+        )
+        .execute(tx.as_mut())
+        .await?;
+
+        Ok(())
+    }
+}
+
+#[derive(strum::Display)]
+enum OutboxEvent {
+    RatesPersisted,
+}
+#[derive(Clone)]
+pub struct LiveOutboxRepository {}
+impl LiveOutboxRepository {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+impl OutboxRepository for LiveOutboxRepository {
+    async fn insert_rates_inserted(
+        &self,
+        tx: &mut PgTransaction<'_>,
+        now: DateTime<Utc>,
+    ) -> Result<(), DBError> {
+        sqlx::query!("INSERT INTO outbox (id, event_type, created_at, handled_at) VALUES (gen_random_uuid(), $1, $2, NULL)", OutboxEvent::RatesPersisted.to_string(), now)
+            .execute(tx.as_mut())
+            .await?;
+
+        Ok(())
     }
 }

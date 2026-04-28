@@ -1,21 +1,23 @@
 use crate::common::DBFixture;
-use axum::body::Body;
-use axum::http::{header, Request, StatusCode};
 use axum::Router;
-use portfolio_tracker_backend::api::appstate::AppState;
+use axum::body::Body;
+use axum::http::{Request, StatusCode, header};
 use portfolio_tracker_backend::api::router::create_router;
-use portfolio_tracker_backend::repository::live::{LiveAssetRepository, LiveUserRepository};
-use portfolio_tracker_backend::repository::Repositories;
+use portfolio_tracker_backend::appstate::AppState;
 use serde_json::json;
 use tower::ServiceExt;
 
 async fn setup_app() -> (Router, DBFixture) {
     let db = DBFixture::new().await;
-    let repositories = Repositories {
-        asset: LiveAssetRepository::new_from_pool(db.pool.clone()),
-        user: LiveUserRepository::new_from_pool(db.pool.clone()),
-    };
-    (create_router(AppState::new(repositories, "test_secret".to_string())), db)
+    (
+        create_router(AppState::with_pool(
+            db.pool.clone(),
+            "CG_URL".into(),
+            "CG_KEY".into(),
+            "test_secret".to_string(),
+        )),
+        db,
+    )
 }
 
 #[tokio::test]
@@ -86,22 +88,23 @@ async fn login_with_valid_credentials_returns_token() {
     let (app, _db) = setup_app().await;
 
     // Register
-    app.clone().oneshot(
-        Request::builder()
-            .method("POST")
-            .uri("/auth/register")
-            .header(header::CONTENT_TYPE, "application/json")
-            .body(Body::from(
-                json!({
-                    "email": "test@test.com",
-                    "password": "password123"
-                })
-                .to_string(),
-            ))
-            .unwrap(),
-    )
-    .await
-    .unwrap();
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/auth/register")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "email": "test@test.com",
+                        "password": "password123"
+                    })
+                    .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
 
     // Login
     let response = app

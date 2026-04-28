@@ -1,66 +1,43 @@
-use portfolio_tracker_backend::api::router::create_router;
-use portfolio_tracker_backend::client::live::LiveCGClient;
-use portfolio_tracker_backend::client::CGClient;
-use portfolio_tracker_backend::api::appstate::AppState;
-use portfolio_tracker_backend::model::Contract;
-use portfolio_tracker_backend::model::error::AppError;
-use portfolio_tracker_backend::model::{Asset, Network};
-use portfolio_tracker_backend::repository::{AssetRepository, Repositories};
+use std::time::Duration;
 use dotenvy::dotenv;
-use futures::future::try_join_all;
-use itertools::Itertools;
-use std::collections::HashMap;
+use portfolio_tracker_backend::api::router::create_router;
+use portfolio_tracker_backend::appstate::AppState;
+use portfolio_tracker_backend::model::error::AppError;
+use portfolio_tracker_backend::jobs;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
     dotenv().ok();
 
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let cg_url = std::env::var("CG_URL").expect("CG_KEY must be set");
+    let cg_key = std::env::var("CG_KEY").expect("CG_KEY must be set");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-    let repositories =
-        Repositories::connect(&std::env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-            .await?;
 
-    let state = AppState::new(repositories, jwt_secret);
+    let state = AppState::new(
+        db_url,
+        cg_url,
+        cg_key,
+        jwt_secret,
+    ).await?;
+
+    let rates_fetching_job_state = state.clone();
+
+    // Spawns rates-fetching job
+    tokio::spawn(async move {
+        let mut ticker = tokio::time::interval(Duration::from_mins(60));
+        loop {
+            ticker.tick().await;
+            if let Err(e) = jobs::rates::fetch_rates_and_persist(rates_fetching_job_state.clone()).await {
+                eprintln!("Rate fetching error: {e}");
+            }
+        }
+    });
 
     let app = create_router(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
     axum::serve(listener, app).await?;
-
-    Ok(())
-}
-
-// Not used, kept as an example for future code
-async fn _pull_prices_from_cg() -> Result<(), AppError> {
-    let live_client: LiveCGClient = LiveCGClient::new(
-        "https://api.coingecko.com/api/v3".into(),
-        std::env::var("CG_KEY").expect("CG_KEY must be set"),
-    );
-
-    let repositories = Repositories::connect(&std::env::var("DATABASE_URL")?).await?;
-
-    let assets = repositories.asset.get_all_assets().await?;
-
-    let assets_per_network: HashMap<Network, Vec<Asset>> = assets
-        .into_iter()
-        .into_group_map_by(|asset| asset.network.clone());
-
-    let prices_per_asset_f = assets_per_network.into_iter().map(|(network, assets)| {
-        let contracts: Vec<Contract> = assets.iter().map(|a| a.contract_address.clone()).collect();
-        live_client.get_prices_from_network(network, contracts)
-    });
-
-    let all_token_prices = try_join_all(prices_per_asset_f).await?;
-    for token_prices_per_network in all_token_prices {
-        for blockchain_asset_price in token_prices_per_network.prices {
-            println!(
-                "{}({}): {}",
-                blockchain_asset_price.symbol,
-                blockchain_asset_price.contract,
-                blockchain_asset_price.price,
-            );
-        }
-    }
 
     Ok(())
 }

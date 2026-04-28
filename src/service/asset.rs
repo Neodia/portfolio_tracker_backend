@@ -3,7 +3,7 @@ use crate::model::error::AppError;
 use crate::repository::AssetRepository;
 
 #[derive(Clone)]
-pub struct AssetService<R: AssetRepository + Clone> {
+pub struct AssetService<R: AssetRepository> {
     repository: R,
 }
 

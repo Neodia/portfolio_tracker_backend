@@ -4,7 +4,7 @@ use crate::model::Contract;
 use crate::model::Network;
 use std::future::Future;
 
-pub trait CGClient {
+pub trait CGClient: Clone {
     fn get_prices_from_network(
         &self,
         network: Network,

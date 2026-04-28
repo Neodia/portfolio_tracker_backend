@@ -1,6 +1,7 @@
 use crate::client::error::ClientError;
 use crate::repository::error::DBError;
 use thiserror::Error;
+use crate::model::Asset;
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -27,4 +28,7 @@ pub enum AppError {
 
     #[error("PasswordError: {0}")]
     PasswordError(String),
+    
+    #[error("Missing CG Price for {0}")]
+    MissingAssetPriceError(Asset),
 }

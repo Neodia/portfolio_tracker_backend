@@ -1,5 +1,5 @@
 use crate::api::model::{LoginRequest, RegisterRequest, TokenResponse};
-use crate::api::appstate::AppState;
+use crate::appstate::AppState;
 use crate::model::error::AppError;
 use axum::Json;
 use axum::extract::State;

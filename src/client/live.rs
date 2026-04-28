@@ -7,6 +7,7 @@ use crate::model::Contract;
 use crate::model::Network;
 use reqwest::{Client, StatusCode};
 
+#[derive(Clone)]
 pub struct LiveCGClient {
     base_url: String,
     cg_key: String,

@@ -39,6 +39,11 @@ impl IntoResponse for AppError {
                 "TOKEN_CREATION_ERROR",
                 self.to_string(),
             ),
+            AppError::MissingAssetPriceError(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "MISSING_ASSET_PRICE",
+                self.to_string(),
+            ),
         };
 
         (
