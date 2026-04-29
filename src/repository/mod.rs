@@ -1,11 +1,11 @@
 pub mod error;
 pub mod live;
-pub mod repository;
+pub mod traits;
 
-pub use repository::AssetRepository;
-pub use repository::OutboxRepository;
-pub use repository::RateRepository;
-pub use repository::UserRepository;
+pub use traits::AssetRepository;
+pub use traits::OutboxRepository;
+pub use traits::RateRepository;
+pub use traits::UserRepository;
 
 mod mapper;
 mod model;
