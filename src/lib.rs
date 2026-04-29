@@ -1,7 +1,7 @@
+pub mod api;
+pub mod appstate;
 pub mod client;
+pub mod jobs;
 pub mod model;
 pub mod repository;
-pub mod api;
 pub mod service;
-pub mod jobs;
-pub mod appstate;

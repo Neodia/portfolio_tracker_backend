@@ -1,7 +1,5 @@
 use crate::client::live::LiveCGClient;
-use crate::repository::live::{
-    LiveAssetRepository, LiveOutboxRepository, LiveRateRepository, LiveUserRepository,
-};
+use crate::repository::live::{LiveAssetRepository, LiveUserRepository};
 use crate::service::asset::AssetService;
 use crate::service::rates::RatesService;
 use crate::service::user::UserService;

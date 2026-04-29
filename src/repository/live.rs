@@ -79,13 +79,8 @@ impl UserRepository for LiveUserRepository {
     }
 }
 
-#[derive(Clone)]
-pub struct LiveRateRepository {}
-impl LiveRateRepository {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
+#[derive(Clone, Default)]
+pub struct LiveRateRepository;
 impl RateRepository for LiveRateRepository {
     async fn insert_rates(
         &self,
@@ -114,13 +109,8 @@ impl RateRepository for LiveRateRepository {
 enum OutboxEvent {
     RatesPersisted,
 }
-#[derive(Clone)]
-pub struct LiveOutboxRepository {}
-impl LiveOutboxRepository {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
+#[derive(Clone, Default)]
+pub struct LiveOutboxRepository;
 impl OutboxRepository for LiveOutboxRepository {
     async fn insert_rates_inserted(
         &self,

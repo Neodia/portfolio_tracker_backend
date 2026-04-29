@@ -1,8 +1,8 @@
+use crate::common::DBFixture;
 use portfolio_tracker_backend::model::{Asset, Contract, Network};
 use portfolio_tracker_backend::repository::AssetRepository;
 use portfolio_tracker_backend::repository::live::LiveAssetRepository;
 use uuid::Uuid;
-use crate::common::DBFixture;
 
 #[tokio::test]
 async fn get_all_assets_returns_data() {

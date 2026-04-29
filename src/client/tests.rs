@@ -35,11 +35,13 @@ fn map_cg_to_domain_works() {
                     symbol: symbol.clone(),
                     name: name.clone(),
                     address: contract.clone(),
-                    price_usd
+                    price_usd: Some(price_usd.clone()),
                 }
             },
             network.clone()
         ),
-        BlockchainAssetPrice::new(symbol, name, network, contract, price_usd)
+        Some(BlockchainAssetPrice::new(
+            symbol, name, network, contract, price_usd
+        ))
     )
 }

@@ -3,12 +3,10 @@ use crate::client::error::ClientError;
 use crate::client::model::{BlockchainAssetPrice, GetPricesFromNetworkResponse};
 use crate::model::error::AppError;
 use crate::model::{Asset, AssetPrice, Contract, Network};
-use crate::repository::error::DBError;
 use crate::repository::{AssetRepository, OutboxRepository, RateRepository, Repositories};
 use chrono::Utc;
 use futures::future::try_join_all;
 use itertools::Itertools;
-use sqlx::PgPool;
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -51,7 +49,7 @@ impl<C: CGClient> RatesService<C> {
 
         // Logs business errors. Other errors get bubbled up
         for error in price_mapping_errors {
-            eprintln!("{}", error);
+            tracing::warn!(warn=?error, "Error finding price for asset");
         }
 
         let now = Utc::now();

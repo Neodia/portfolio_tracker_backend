@@ -3,20 +3,22 @@ pub mod live;
 pub mod repository;
 
 pub use repository::AssetRepository;
-pub use repository::UserRepository;
-pub use repository::RateRepository;
 pub use repository::OutboxRepository;
+pub use repository::RateRepository;
+pub use repository::UserRepository;
 
 mod mapper;
 mod model;
 
 use crate::repository::error::DBError;
-use crate::repository::live::{LiveAssetRepository, LiveOutboxRepository, LiveRateRepository, LiveUserRepository};
+use crate::repository::live::{
+    LiveAssetRepository, LiveOutboxRepository, LiveRateRepository, LiveUserRepository,
+};
 use sqlx::{PgPool, PgTransaction};
 
 #[derive(Clone)]
 pub struct Repositories {
-    pub pool: PgPool,
+    pool: PgPool,
     pub asset: LiveAssetRepository,
     pub user: LiveUserRepository,
     pub rate: LiveRateRepository,
@@ -33,11 +35,11 @@ impl Repositories {
             pool: pool.clone(),
             asset: LiveAssetRepository::new_from_pool(pool.clone()),
             user: LiveUserRepository::new_from_pool(pool.clone()),
-            rate: LiveRateRepository::new(),
-            outbox: LiveOutboxRepository::new(),
+            rate: LiveRateRepository::default(),
+            outbox: LiveOutboxRepository::default(),
         }
     }
-    pub async fn begin_transaction(&self) -> Result<PgTransaction, DBError> {
+    pub async fn begin_transaction(&self) -> Result<PgTransaction<'_>, DBError> {
         self.pool.begin().await.map_err(DBError::from)
     }
 

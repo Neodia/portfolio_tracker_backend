@@ -1,3 +1,4 @@
+use crate::client::cg_model::CGTokenData;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -16,4 +17,7 @@ pub enum ClientError {
 
     #[error("ClientError: unexpected error {0}")]
     Unexpected(u16),
+
+    #[error("ClientError: token price {0:?}")]
+    MissingAssetPriceError(CGTokenData),
 }

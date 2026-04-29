@@ -34,7 +34,7 @@ impl LiveCGClient {
     ) -> Result<Response, ClientError> {
         let response = self
             .client
-            .get(url)
+            .get(&url)
             .header("x-cg-demo-api-key", &self.cg_key)
             .send()
             .await?;
