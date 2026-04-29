@@ -31,7 +31,7 @@ impl WithEnrichment<Network, GetPricesFromNetworkResponse> for CGGetPricesFromNe
     fn into_domain(self, network: Network) -> GetPricesFromNetworkResponse {
         let (prices, errors): (Vec<BlockchainAssetPrice>, Vec<ClientError>) =
             self.data.into_iter().partition_map(|cg_token_data| {
-                match map_cg_to_domain(cg_token_data.clone(), network.clone()) {
+                match map_cg_to_domain(cg_token_data.clone(), network) {
                     Some(data) => Left(data),
                     None => Right(ClientError::MissingAssetPriceError(cg_token_data)),
                 }

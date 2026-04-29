@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 
 #[derive(
-    Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, strum::EnumIter, strum::Display,
+    Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter, strum::Display,
 )]
 pub enum Network {
     Bitcoin,

@@ -25,9 +25,8 @@ impl<C: CGClient> RatesService<C> {
     pub async fn fetch_rates_and_persist(&self) -> Result<(), AppError> {
         let assets = self.repositories.asset.get_all_assets().await?;
 
-        let assets_per_network: HashMap<Network, Vec<&Asset>> = assets
-            .iter()
-            .into_group_map_by(|asset| asset.network.clone());
+        let assets_per_network: HashMap<Network, Vec<&Asset>> =
+            assets.iter().into_group_map_by(|asset| asset.network);
 
         let prices_per_asset_f = assets_per_network
             .into_iter()
@@ -77,13 +76,13 @@ impl<C: CGClient> RatesService<C> {
             prices
                 .prices
                 .into_iter()
-                .map(|price| ((network.clone(), price.contract.clone()), price))
+                .map(|price| ((network, price.contract.clone()), price))
                 .collect::<HashMap<_, _>>()
         };
 
         let contracts: Vec<Contract> = assets.iter().map(|a| a.contract_address.clone()).collect();
         client
-            .get_prices_from_network(network.clone(), contracts)
+            .get_prices_from_network(network, contracts)
             .await
             .map(map_response_to_hashmap)
     }
@@ -92,12 +91,9 @@ impl<C: CGClient> RatesService<C> {
         asset: Asset,
         prices: &HashMap<(Network, Contract), BlockchainAssetPrice>,
     ) -> Result<AssetPrice, AppError> {
-        let asset_clone = asset.clone();
-        let key = (asset_clone.network, asset_clone.contract_address);
+        let key = (asset.network, asset.contract_address.clone());
         let price = prices.get(&key);
-        let price = price
-            .cloned()
-            .ok_or(AppError::MissingAssetPriceError(asset.clone()))?;
+        let price = price.ok_or(AppError::MissingAssetPriceError(asset.clone()))?;
 
         Ok(AssetPrice::new(asset, price.price))
     }

@@ -32,7 +32,7 @@ async fn get_prices_per_network_returns_mapped_response() {
     let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
     let response = client
         .get_prices_from_network(
-            network.clone(),
+            network,
             vec![trump_contract.clone(), soracat_contract.clone()],
         )
         .await
@@ -44,14 +44,14 @@ async fn get_prices_per_network_returns_mapped_response() {
             BlockchainAssetPrice::new(
                 Symbol("TRUMP".into()),
                 "OFFICIAL TRUMP".to_string(),
-                network.clone(),
+                network,
                 trump_contract.clone(),
                 Decimal::from_f64(7.7593694175f64).unwrap(),
             ),
             BlockchainAssetPrice::new(
                 Symbol("SORACAT".into()),
                 "SORACAT".to_string(),
-                network.clone(),
+                network,
                 soracat_contract.clone(),
                 Decimal::from_f64(0.000006746080385f64).unwrap(),
             ),
@@ -89,7 +89,7 @@ async fn get_prices_per_network_unauthorized() {
     let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
     let response = client
         .get_prices_from_network(
-            network.clone(),
+            network,
             vec![trump_contract.clone(), soracat_contract.clone()],
         )
         .await;
@@ -118,7 +118,7 @@ async fn get_prices_per_network_rate_limited() {
     let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
     let response = client
         .get_prices_from_network(
-            network.clone(),
+            network,
             vec![trump_contract.clone(), soracat_contract.clone()],
         )
         .await;
@@ -147,7 +147,7 @@ async fn get_prices_per_network_not_found() {
     let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
     let response = client
         .get_prices_from_network(
-            network.clone(),
+            network,
             vec![trump_contract.clone(), soracat_contract.clone()],
         )
         .await;
@@ -176,7 +176,7 @@ async fn get_prices_per_network_unexpected() {
     let client = LiveCGClient::new(mock_server.uri(), "fake_key".into());
     let response = client
         .get_prices_from_network(
-            network.clone(),
+            network,
             vec![trump_contract.clone(), soracat_contract.clone()],
         )
         .await;
