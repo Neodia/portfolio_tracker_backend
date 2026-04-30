@@ -35,7 +35,7 @@ async fn register_returns_200_with_token() {
                         "email": "test@test.com",
                         "password": "password123"
                     })
-                    .to_string(),
+                        .to_string(),
                 ))
                 .unwrap(),
         )
@@ -50,6 +50,56 @@ async fn register_returns_200_with_token() {
     let json: serde_json::Value = serde_json::from_slice(&body).unwrap();
     assert!(json["token"].as_str().is_some());
     assert_eq!(json["token_type"], "Bearer");
+}
+
+#[tokio::test]
+async fn email_validation_returns_bad_request() {
+    let (app, _db) = setup_app().await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/auth/register")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "email": "this ain't an email",
+                        "password": "password123"
+                    })
+                        .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+}
+
+#[tokio::test]
+async fn password_validation_returns_bad_request() {
+    let (app, _db) = setup_app().await;
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/auth/register")
+                .header(header::CONTENT_TYPE, "application/json")
+                .body(Body::from(
+                    json!({
+                        "email": "test@test.com",
+                        "password": "smol"
+                    })
+                        .to_string(),
+                ))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
 }
 
 #[tokio::test]

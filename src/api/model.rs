@@ -1,15 +1,21 @@
 use crate::model::{Asset, Contract, Network, Symbol};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
-#[derive(Deserialize, Clone, Debug)]
+
+#[derive(Deserialize, Clone, Debug, Validate)]
 pub struct RegisterRequest {
+    #[validate(email(message = "Invalid email format"))]
     pub email: String,
+    #[validate(length(min = 8, message = "Password must be at least 8 characters"))]
     pub password: String,
 }
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Debug, Validate)]
 pub struct LoginRequest {
+    #[validate(email(message = "Invalid email format"))]
     pub email: String,
+    #[validate(length(min = 8, message = "Wrong password"))] // Anything below the min require password length will be wrong anyway
     pub password: String,
 }
 #[derive(Serialize)]

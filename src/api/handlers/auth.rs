@@ -3,10 +3,11 @@ use crate::appstate::AppState;
 use crate::model::error::AppError;
 use axum::Json;
 use axum::extract::State;
+use crate::api::ValidatedJson;
 
 pub async fn register(
     State(state): State<AppState>,
-    req: Json<RegisterRequest>,
+    ValidatedJson(req): ValidatedJson<RegisterRequest>,
 ) -> Result<Json<TokenResponse>, AppError> {
     let token = state
         .services
@@ -19,7 +20,7 @@ pub async fn register(
 
 pub async fn login(
     State(state): State<AppState>,
-    req: Json<LoginRequest>,
+    ValidatedJson(req): ValidatedJson<LoginRequest>,
 ) -> Result<Json<TokenResponse>, AppError> {
     let user = state
         .services

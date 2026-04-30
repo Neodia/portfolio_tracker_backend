@@ -24,6 +24,9 @@ pub enum AppError {
 
     #[error("BusinessError: {0}")]
     BusinessError(#[from] BusinessError),
+
+    #[error("BadRequest: {0}")]
+    BadRequestError(String),
 }
 
 #[derive(Error, Debug)]
