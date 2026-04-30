@@ -1,5 +1,4 @@
 use crate::client::error::ClientError;
-use crate::model::Asset;
 use crate::repository::error::DBError;
 use thiserror::Error;
 
@@ -17,18 +16,21 @@ pub enum AppError {
     #[error("Database error: {0}")]
     DatabaseError(#[from] DBError),
 
-    #[error("Registration failed: User already exists")]
-    UserAlreadyExistsError,
-
-    #[error("User not found: Invalid email/password combination")]
-    UserNotFoundError,
-
     #[error("TokenCreationError: {0}")]
     TokenCreationError(#[from] jsonwebtoken::errors::Error),
 
     #[error("PasswordError: {0}")]
     PasswordError(String),
 
-    #[error("Missing CG Price for {0}")]
-    MissingAssetPriceError(Asset),
+    #[error("BusinessError: {0}")]
+    BusinessError(#[from] BusinessError),
+}
+
+#[derive(Error, Debug)]
+pub enum BusinessError {
+    #[error("Registration failed: User already exists")]
+    UserAlreadyExistsError,
+
+    #[error("User not found: Invalid email/password combination")]
+    UserNotFoundError,
 }

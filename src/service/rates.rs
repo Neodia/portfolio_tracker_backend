@@ -4,6 +4,7 @@ use crate::client::model::{BlockchainAssetPrice, GetPricesFromNetworkResponse};
 use crate::model::error::AppError;
 use crate::model::{Asset, AssetPrice, Contract, Network};
 use crate::repository::{AssetRepository, OutboxRepository, RateRepository, Repositories};
+use crate::service::error::ServiceError;
 use chrono::Utc;
 use futures::future::try_join_all;
 use itertools::Itertools;
@@ -38,7 +39,7 @@ impl<C: CGClient> RatesService<C> {
             .flatten()
             .collect();
 
-        let (asset_rates, price_mapping_errors): (Vec<AssetPrice>, Vec<AppError>) = assets
+        let (asset_rates, price_mapping_errors): (Vec<AssetPrice>, Vec<ServiceError>) = assets
             .into_iter()
             .map(|asset| Self::get_price_for_asset(asset, &all_token_prices))
             .partition_map(|result| match result {
@@ -90,10 +91,10 @@ impl<C: CGClient> RatesService<C> {
     fn get_price_for_asset(
         asset: Asset,
         prices: &HashMap<(Network, Contract), BlockchainAssetPrice>,
-    ) -> Result<AssetPrice, AppError> {
+    ) -> Result<AssetPrice, ServiceError> {
         let key = (asset.network, asset.contract_address.clone());
         let price = prices.get(&key);
-        let price = price.ok_or(AppError::MissingAssetPriceError(asset.clone()))?;
+        let price = price.ok_or(ServiceError::MissingAssetPriceError(asset.clone()))?;
 
         Ok(AssetPrice::new(asset, price.price))
     }

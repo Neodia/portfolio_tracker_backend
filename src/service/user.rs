@@ -1,4 +1,4 @@
-use crate::model::error::AppError;
+use crate::model::error::{AppError, BusinessError};
 use crate::repository::UserRepository;
 use crate::repository::error::DBError;
 use crate::service::model::Token;
@@ -30,7 +30,9 @@ impl<R: UserRepository> UserService<R> {
             .insert_user(email, password_hash.as_str())
             .await
             .map_err(|err| match err {
-                DBError::UserEmailAlreadyExistsError(_) => AppError::UserAlreadyExistsError,
+                DBError::UserEmailAlreadyExistsError(_) => {
+                    AppError::BusinessError(BusinessError::UserAlreadyExistsError)
+                }
                 e => AppError::DatabaseError(e),
             })?;
 
@@ -42,7 +44,7 @@ impl<R: UserRepository> UserService<R> {
             .repository
             .get_user(email)
             .await?
-            .ok_or(AppError::UserNotFoundError)?;
+            .ok_or(BusinessError::UserNotFoundError)?;
 
         verify_password(raw_password, &user.password_hash)?;
 
@@ -65,7 +67,7 @@ fn verify_password(password: &str, hash: &str) -> Result<(), AppError> {
         PasswordHash::new(hash).map_err(|err| AppError::PasswordError(err.to_string()))?;
     Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
-        .map_err(|_| AppError::UserNotFoundError)?;
+        .map_err(|_| BusinessError::UserNotFoundError)?;
     Ok(())
 }
 

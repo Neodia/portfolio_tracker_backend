@@ -1,4 +1,5 @@
 use crate::model::error::AppError;
+use crate::model::error::BusinessError;
 use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
@@ -25,10 +26,6 @@ impl IntoResponse for AppError {
                 "CONFIG_ERROR",
                 self.to_string(),
             ),
-            AppError::UserAlreadyExistsError => {
-                (StatusCode::CONFLICT, "CONFLICT", self.to_string())
-            }
-            AppError::UserNotFoundError => (StatusCode::NOT_FOUND, "NOT_FOUND", self.to_string()),
             AppError::PasswordError(_) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "PASSWORD_ERROR",
@@ -39,11 +36,14 @@ impl IntoResponse for AppError {
                 "TOKEN_CREATION_ERROR",
                 self.to_string(),
             ),
-            AppError::MissingAssetPriceError(_) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "MISSING_ASSET_PRICE",
-                self.to_string(),
-            ),
+            AppError::BusinessError(business_error) => match business_error {
+                BusinessError::UserNotFoundError => {
+                    (StatusCode::NOT_FOUND, "NOT_FOUND", self.to_string())
+                }
+                BusinessError::UserAlreadyExistsError => {
+                    (StatusCode::CONFLICT, "CONFLICT", self.to_string())
+                }
+            },
         };
 
         (

@@ -1,7 +1,7 @@
 use crate::common::DBFixture;
+use portfolio_tracker_backend::repository::UserRepository;
 use portfolio_tracker_backend::repository::error::DBError;
 use portfolio_tracker_backend::repository::live::LiveUserRepository;
-use portfolio_tracker_backend::repository::UserRepository;
 
 #[tokio::test]
 async fn creating_user_works() {

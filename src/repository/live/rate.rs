@@ -1,10 +1,10 @@
+use crate::model::AssetPrice;
+use crate::repository::RateRepository;
+use crate::repository::error::DBError;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use sqlx::PgTransaction;
 use uuid::Uuid;
-use crate::model::AssetPrice;
-use crate::repository::error::DBError;
-use crate::repository::RateRepository;
 
 #[derive(Clone, Default)]
 pub struct LiveRateRepository;
@@ -25,8 +25,8 @@ impl RateRepository for LiveRateRepository {
             &asset_rates as &[Decimal],
             &vec![now; asset_ids.len()] as &[DateTime<Utc>]
         )
-            .execute(tx.as_mut())
-            .await?;
+        .execute(tx.as_mut())
+        .await?;
 
         Ok(())
     }

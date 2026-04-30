@@ -6,6 +6,7 @@ use crate::service::user::UserService;
 
 pub mod asset;
 
+mod error;
 pub mod model;
 pub mod rates;
 pub mod user;
