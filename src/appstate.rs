@@ -9,6 +9,7 @@ use sqlx::PgPool;
 
 #[derive(Clone)]
 pub struct AppState {
+    pub jwt_secret: String,
     pub repositories: Repositories,
     pub services: Services,
 }
@@ -34,6 +35,7 @@ impl AppState {
 
     fn from(repositories: Repositories, cg_client: LiveCGClient, jwt_secret: String) -> Self {
         Self {
+            jwt_secret: jwt_secret.clone(),
             repositories: repositories.clone(),
             services: Services {
                 asset_service: AssetService::new(repositories.asset.clone()),

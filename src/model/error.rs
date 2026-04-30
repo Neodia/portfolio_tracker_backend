@@ -36,4 +36,7 @@ pub enum BusinessError {
 
     #[error("User not found: Invalid email/password combination")]
     UserNotFoundError,
+
+    #[error("Unauthorized")]
+    Unauthorized,
 }

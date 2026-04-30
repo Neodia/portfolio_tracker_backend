@@ -1,8 +1,8 @@
 use crate::model::error::AppError;
 use crate::model::error::BusinessError;
+use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::Json;
 use itertools::Either::{Left, Right};
 
 impl IntoResponse for AppError {
@@ -37,11 +37,9 @@ impl IntoResponse for AppError {
                 "TOKEN_CREATION_ERROR",
                 self.to_string(),
             )),
-            AppError::BadRequestError(_) => Left((
-                StatusCode::BAD_REQUEST,
-                "BAD_REQUEST",
-                self.to_string(),
-            )),
+            AppError::BadRequestError(_) => {
+                Left((StatusCode::BAD_REQUEST, "BAD_REQUEST", self.to_string()))
+            }
             AppError::BusinessError(business_error) => Right(business_error.into_response()),
         };
 
@@ -66,6 +64,9 @@ impl IntoResponse for BusinessError {
             }
             BusinessError::UserAlreadyExistsError => {
                 (StatusCode::CONFLICT, "CONFLICT", self.to_string())
+            }
+            BusinessError::Unauthorized => {
+                (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", self.to_string())
             }
         };
 

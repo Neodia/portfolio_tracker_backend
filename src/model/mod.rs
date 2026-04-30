@@ -7,6 +7,7 @@ mod symbol;
 #[cfg(test)]
 mod tests;
 mod user;
+mod claims;
 
 pub use asset::*;
 pub use asset_price::*;
@@ -14,3 +15,4 @@ pub use contract::*;
 pub use network::*;
 pub use symbol::*;
 pub use user::*;
+pub use claims::*;

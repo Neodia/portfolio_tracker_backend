@@ -8,6 +8,7 @@ pub mod error;
 pub mod handlers;
 pub mod model;
 pub mod router;
+mod auth;
 
 // Taken from: https://docs.rs/axum/latest/axum/extract/trait.FromRequest.html
 pub struct ValidatedJson<T>(pub T);
