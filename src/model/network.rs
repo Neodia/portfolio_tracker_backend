@@ -1,9 +1,7 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use strum::IntoEnumIterator;
 
-#[derive(
-    Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter, strum::Display,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter, strum::Display)]
 pub enum Network {
     Bitcoin,
     Ethereum,
@@ -37,5 +35,13 @@ impl Network {
 
     pub fn from_id(id: &str) -> Option<Network> {
         Network::iter().find(|network| network.to_id() == id)
+    }
+}
+
+impl<'de> Deserialize<'de> for Network {
+    fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let s = String::deserialize(d)?;
+        Network::from_id(&s)
+            .ok_or_else(|| serde::de::Error::custom(format!("unknown network id: {}", s)))
     }
 }

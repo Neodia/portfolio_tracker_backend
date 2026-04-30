@@ -1,28 +1,16 @@
-use crate::common::DBFixture;
-use axum::Router;
+use crate::common::TestApp;
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
-use portfolio_tracker_backend::api::router::create_router;
-use portfolio_tracker_backend::appstate::AppState;
 use serde_json::json;
 use tower::ServiceExt;
 
-async fn setup_app() -> (Router, DBFixture) {
-    let db = DBFixture::new().await;
-    (
-        create_router(AppState::with_pool(
-            db.pool.clone(),
-            "CG_URL".into(),
-            "CG_KEY".into(),
-            "test_secret".to_string(),
-        )),
-        db,
-    )
-}
-
 #[tokio::test]
 async fn register_returns_200_with_token() {
-    let (app, _db) = setup_app().await;
+    let TestApp {
+        appstate: _,
+        router: app,
+        db: _db,
+    } = TestApp::new().await;
 
     let response = app
         .oneshot(
@@ -35,7 +23,7 @@ async fn register_returns_200_with_token() {
                         "email": "test@test.com",
                         "password": "password123"
                     })
-                        .to_string(),
+                    .to_string(),
                 ))
                 .unwrap(),
         )
@@ -54,7 +42,11 @@ async fn register_returns_200_with_token() {
 
 #[tokio::test]
 async fn email_validation_returns_bad_request() {
-    let (app, _db) = setup_app().await;
+    let TestApp {
+        appstate: _,
+        router: app,
+        db: _db,
+    } = TestApp::new().await;
 
     let response = app
         .oneshot(
@@ -67,7 +59,7 @@ async fn email_validation_returns_bad_request() {
                         "email": "this ain't an email",
                         "password": "password123"
                     })
-                        .to_string(),
+                    .to_string(),
                 ))
                 .unwrap(),
         )
@@ -79,7 +71,11 @@ async fn email_validation_returns_bad_request() {
 
 #[tokio::test]
 async fn password_validation_returns_bad_request() {
-    let (app, _db) = setup_app().await;
+    let TestApp {
+        appstate: _,
+        router: app,
+        db: _db,
+    } = TestApp::new().await;
 
     let response = app
         .oneshot(
@@ -92,7 +88,7 @@ async fn password_validation_returns_bad_request() {
                         "email": "test@test.com",
                         "password": "smol"
                     })
-                        .to_string(),
+                    .to_string(),
                 ))
                 .unwrap(),
         )
@@ -104,7 +100,11 @@ async fn password_validation_returns_bad_request() {
 
 #[tokio::test]
 async fn register_duplicate_email_returns_conflict() {
-    let (app, _db) = setup_app().await;
+    let TestApp {
+        appstate: _,
+        router: app,
+        db: _db,
+    } = TestApp::new().await;
 
     let registration_f = || {
         let app = app.clone();
@@ -135,7 +135,11 @@ async fn register_duplicate_email_returns_conflict() {
 
 #[tokio::test]
 async fn login_with_valid_credentials_returns_token() {
-    let (app, _db) = setup_app().await;
+    let TestApp {
+        appstate: _,
+        router: app,
+        db: _db,
+    } = TestApp::new().await;
 
     // Register
     app.clone()
@@ -181,7 +185,11 @@ async fn login_with_valid_credentials_returns_token() {
 
 #[tokio::test]
 async fn login_with_wrong_password_returns_not_found() {
-    let (app, _db) = setup_app().await;
+    let TestApp {
+        appstate: _,
+        router: app,
+        db: _db,
+    } = TestApp::new().await;
 
     let response = app
         .oneshot(

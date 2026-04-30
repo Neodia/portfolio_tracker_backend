@@ -1,14 +1,14 @@
 use crate::model::error::AppError;
-use axum::extract::{FromRequest, Request};
 use axum::Json;
+use axum::extract::{FromRequest, Request};
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
+mod auth;
 pub mod error;
 pub mod handlers;
 pub mod model;
 pub mod router;
-mod auth;
 
 // Taken from: https://docs.rs/axum/latest/axum/extract/trait.FromRequest.html
 pub struct ValidatedJson<T>(pub T);

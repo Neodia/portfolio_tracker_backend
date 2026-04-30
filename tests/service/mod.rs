@@ -1,1 +1,2 @@
+mod assets;
 mod rates;

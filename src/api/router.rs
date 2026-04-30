@@ -10,13 +10,14 @@ pub fn create_router(state: AppState) -> Router {
     let health_routes = Router::new()
         .route("/live", get(health::live_check))
         .route("/ready", get(health::readiness_check));
-    
+
     let public_routes = Router::new()
         .route("/register", post(auth::register))
         .route("/login", post(auth::login));
 
     let protected_routes = Router::new()
         .route("/assets", get(assets::get_all_assets))
+        .route("/assets", post(assets::insert_asset))
         .route_layer(from_extractor_with_state::<AuthenticatedUser, AppState>(
             state.clone(),
         ));

@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
-
 #[derive(Deserialize, Clone, Debug, Validate)]
 pub struct RegisterRequest {
     #[validate(email(message = "Invalid email format"))]
@@ -15,7 +14,8 @@ pub struct RegisterRequest {
 pub struct LoginRequest {
     #[validate(email(message = "Invalid email format"))]
     pub email: String,
-    #[validate(length(min = 8, message = "Wrong password"))] // Anything below the min require password length will be wrong anyway
+    #[validate(length(min = 8, message = "Wrong password"))]
+    // Anything below the min require password length will be wrong anyway
     pub password: String,
 }
 #[derive(Serialize)]
@@ -66,4 +66,12 @@ impl From<Asset> for AssetResponse {
             contract_address: asset.contract_address,
         }
     }
+}
+
+#[derive(Deserialize, Clone, Debug, Validate)]
+pub struct AddAssetRequest {
+    pub symbol: Symbol,
+    pub name: String,
+    pub network: Network,
+    pub contract_address: Contract,
 }

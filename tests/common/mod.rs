@@ -1,3 +1,7 @@
+use axum::Router;
+use portfolio_tracker_backend::api::router::create_router;
+use portfolio_tracker_backend::appstate::AppState;
+use portfolio_tracker_backend::service::model::Token;
 use sqlx::PgPool;
 use testcontainers::ImageExt;
 use testcontainers::runners::AsyncRunner;
@@ -45,5 +49,51 @@ impl DBFixture {
             .fetch_one(&self.pool)
         .await
         .unwrap()
+    }
+}
+
+pub struct TestApp {
+    pub appstate: AppState,
+    pub router: Router,
+    pub db: DBFixture,
+}
+impl TestApp {
+    pub async fn new() -> Self {
+        let db = DBFixture::new().await;
+        let appstate = AppState::with_pool(
+            db.pool.clone(),
+            "CG_URL".into(),
+            "CG_KEY".into(),
+            "test_secret".to_string(),
+        );
+        let router = create_router(appstate.clone());
+        Self {
+            appstate,
+            router,
+            db,
+        }
+    }
+    pub async fn with_mock_cg_uri(mock_cg_uri: &str) -> Self {
+        let db = DBFixture::new().await;
+        let appstate = AppState::with_pool(
+            db.pool.clone(),
+            mock_cg_uri.into(),
+            "CG_KEY".into(),
+            "test_secret".to_string(),
+        );
+        let router = create_router(appstate.clone());
+        Self {
+            appstate,
+            router,
+            db,
+        }
+    }
+    pub async fn with_auth_user(&self) -> Token {
+        self.appstate
+            .services
+            .user_service
+            .register("test@email.com", "password1234")
+            .await
+            .unwrap()
     }
 }

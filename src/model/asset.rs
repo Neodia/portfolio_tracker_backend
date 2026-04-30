@@ -1,9 +1,9 @@
 use crate::model::{Contract, Network, Symbol};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::fmt::Display;
 use uuid::Uuid;
 
-#[derive(Debug, Eq, Hash, Deserialize, Clone, Serialize)]
+#[derive(Debug, Eq, Hash, Deserialize, Clone)]
 pub struct Asset {
     pub id: Uuid,
     pub symbol: Symbol,

@@ -1,9 +1,9 @@
+use crate::api::ValidatedJson;
 use crate::api::model::{LoginRequest, RegisterRequest, TokenResponse};
 use crate::appstate::AppState;
 use crate::model::error::AppError;
 use axum::Json;
 use axum::extract::State;
-use crate::api::ValidatedJson;
 
 pub async fn register(
     State(state): State<AppState>,

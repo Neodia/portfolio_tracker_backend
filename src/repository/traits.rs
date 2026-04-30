@@ -1,4 +1,4 @@
-use crate::model::{Asset, AssetPrice, User};
+use crate::model::{Asset, AssetPrice, Contract, Network, Symbol, User};
 use crate::repository::error::DBError;
 use chrono::{DateTime, Utc};
 use sqlx::PgTransaction;
@@ -6,6 +6,13 @@ use std::future::Future;
 
 pub trait AssetRepository: Clone {
     fn get_all_assets(&self) -> impl Future<Output = Result<Vec<Asset>, DBError>>;
+    fn insert_asset(
+        &self,
+        symbol: Symbol,
+        name: String,
+        network: Network,
+        contract: Contract,
+    ) -> impl Future<Output = Result<(), DBError>>;
 }
 
 pub trait UserRepository: Clone {

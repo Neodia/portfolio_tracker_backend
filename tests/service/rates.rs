@@ -1,24 +1,12 @@
-use crate::common::DBFixture;
+use crate::common::TestApp;
 use itertools::Itertools;
-use portfolio_tracker_backend::appstate::AppState;
 use portfolio_tracker_backend::model::{Contract, Network, Symbol};
 use serde_json::json;
 use wiremock::matchers::{method, path, path_regex};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
-async fn setup_app_with_mock_cg(db: &DBFixture, mock_server: &MockServer) -> AppState {
-    AppState::with_pool(
-        db.pool.clone(),
-        mock_server.uri(),
-        "fake_key".to_string(),
-        "jwt_secret".to_string(),
-    )
-}
-
 #[tokio::test]
 async fn fetch_rates_inserts_rates_and_outbox_event() {
-    let db = DBFixture::new().await;
-
     let network = Network::Solana;
     let trump_symbol = Symbol::new("TRUMP");
     let trump_name = "OFFICIAL TRUMP";
@@ -26,6 +14,26 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
     let soracat_symbol = Symbol::new("SORACAT");
     let soracat_name = "SORACAT";
     let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+
+    let mock_server = MockServer::start().await;
+
+    let body = std::fs::read_to_string("tests/fixtures/get_prices_from_network_200.json")
+        .expect("fixture file not found");
+    Mock::given(method("GET"))
+        .and(path(format!(
+            "/onchain/networks/solana/tokens/multi/{},{}",
+            trump_contract.clone(),
+            soracat_contract.clone()
+        )))
+        .respond_with(ResponseTemplate::new(200).set_body_raw(body, "application/json"))
+        .mount(&mock_server)
+        .await;
+
+    let TestApp {
+        appstate: state,
+        router: _,
+        db,
+    } = TestApp::with_mock_cg_uri(&mock_server.uri()).await;
 
     db.insert_asset(
         trump_symbol.0.as_str(),
@@ -41,21 +49,6 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
         soracat_contract.0.as_str(),
     )
     .await;
-
-    let mock_server = MockServer::start().await;
-
-    let body = std::fs::read_to_string("tests/fixtures/get_prices_from_network_200.json")
-        .expect("fixture file not found");
-    Mock::given(method("GET"))
-        .and(path(format!(
-            "/onchain/networks/solana/tokens/multi/{},{}",
-            trump_contract.clone(),
-            soracat_contract.clone()
-        )))
-        .respond_with(ResponseTemplate::new(200).set_body_raw(body, "application/json"))
-        .mount(&mock_server)
-        .await;
-    let state = setup_app_with_mock_cg(&db, &mock_server).await;
 
     let result = state.services.rates_service.fetch_rates_and_persist().await;
     assert!(result.is_ok());
@@ -83,11 +76,6 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
 
 #[tokio::test]
 async fn fetch_rates_handles_missing_price_gracefully() {
-    let db = DBFixture::new().await;
-
-    db.insert_asset("DEADCOIN", "Dead Coin", "solana", "DeadContractAddress123")
-        .await;
-
     let mock_server = MockServer::start().await;
 
     // CG returns null price
@@ -106,7 +94,13 @@ async fn fetch_rates_handles_missing_price_gracefully() {
         .mount(&mock_server)
         .await;
 
-    let state = setup_app_with_mock_cg(&db, &mock_server).await;
+    let TestApp {
+        appstate: state,
+        router: _,
+        db,
+    } = TestApp::with_mock_cg_uri(&mock_server.uri()).await;
+    db.insert_asset("DEADCOIN", "Dead Coin", "solana", "DeadContractAddress123")
+        .await;
 
     let result = state.services.rates_service.fetch_rates_and_persist().await;
     assert!(result.is_ok());

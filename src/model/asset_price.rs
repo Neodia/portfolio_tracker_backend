@@ -1,8 +1,8 @@
 use crate::model::Asset;
 use rust_decimal::Decimal;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone)]
 pub struct AssetPrice {
     pub asset: Asset,
     pub price_usd: Decimal,
