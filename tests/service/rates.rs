@@ -9,7 +9,7 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 async fn setup_app_with_mock_cg(db: &DBFixture, mock_server: &MockServer) -> AppState {
     AppState::with_pool(
         db.pool.clone(),
-        mock_server.uri(), // point CG client at wiremock
+        mock_server.uri(),
         "fake_key".to_string(),
         "jwt_secret".to_string(),
     )

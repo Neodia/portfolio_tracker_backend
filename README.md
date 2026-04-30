@@ -16,4 +16,8 @@ TODO: Make a proper file out of this
        values
 - `PgPool::clone` uses `Arc` internally so it's safe to clone
 - Rate limiting isn't in this app as I would put in at deployment level behind a WAF (With a K8S service for example)
-- As a purely personal project, there's no SSL as that's a infra issue I don't have as I use my app through SSH. In prod, I would've a Let's Encrypt + Certbot setup
+- As a purely personal project, there's no SSL as that's an infra issue I don't have as I use my app through SSH. In
+  prod, I would've a Let's Encrypt + Certbot setup
+- Testing Strategy: Where relevant I test the whole behavior directly with IT tests (api/service) with Repositories
+  tests to ensure the queries are doing what they are supposed to. Unit tests are only used for specific parts of the
+  code for specific behaviors, like mappers.

@@ -1,7 +1,8 @@
 use sqlx::PgPool;
-use testcontainers::ImageExt;
 use testcontainers::runners::AsyncRunner;
+use testcontainers::ImageExt;
 use testcontainers_modules::postgres::Postgres;
+use uuid::Uuid;
 
 pub struct DBFixture {
     pub pool: PgPool,
@@ -27,16 +28,22 @@ impl DBFixture {
         }
     }
 
-    pub async fn insert_asset(&self, symbol: &str, name: &str, network: &str, contract: &str) {
-        sqlx::query!(
-            "INSERT INTO assets (id, symbol, name, network, contract_address) VALUES (gen_random_uuid(), $1, $2, $3, $4)",
+    pub async fn insert_asset(
+        &self,
+        symbol: &str,
+        name: &str,
+        network: &str,
+        contract: &str,
+    ) -> Uuid {
+        sqlx::query_scalar!(
+            "INSERT INTO assets (id, symbol, name, network, contract_address) VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING id",
             symbol,
             name,
             network,
             contract
         )
-        .execute(&self.pool)
+            .fetch_one(&self.pool)
         .await
-        .unwrap();
+        .unwrap()
     }
 }
