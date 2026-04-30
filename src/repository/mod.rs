@@ -46,4 +46,9 @@ impl Repositories {
     pub async fn commit_transaction(&self, tx: PgTransaction<'_>) -> Result<(), DBError> {
         tx.commit().await.map_err(DBError::from)
     }
+
+    pub async fn is_ready(&self) -> Result<(), DBError> {
+        sqlx::query("SELECT 1").execute(&self.pool).await?;
+        Ok(())
+    }
 }
