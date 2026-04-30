@@ -3,6 +3,9 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub struct Symbol(pub String);
+impl Symbol {
+    pub fn new(symbol: &str) -> Self { Symbol(symbol.to_string()) }
+}
 
 impl Display for Symbol {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
