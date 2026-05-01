@@ -1,30 +1,28 @@
-use crate::common::DBFixture;
+use crate::common::{AssetFixture, DBFixture};
 use chrono::Utc;
-use portfolio_tracker_backend::model::{Asset, AssetPrice, Contract, Network, Symbol};
-use portfolio_tracker_backend::repository::RateRepository;
+use portfolio_tracker_backend::model::{Asset, AssetPrice};
 use portfolio_tracker_backend::repository::live::LiveRateRepository;
-use rust_decimal::Decimal;
+use portfolio_tracker_backend::repository::RateRepository;
 use rust_decimal::prelude::FromPrimitive;
+use rust_decimal::Decimal;
 
 #[tokio::test]
 async fn get_all_assets_returns_data() {
     let db = DBFixture::new().await;
+    
+    let Asset { id: _, symbol, name, network, contract_address } = AssetFixture::jitosol_test_asset();
 
-    let symbol = "BTC";
-    let name = "Bitcoin";
-    let network = Network::Bitcoin;
-    let contract: Contract = "Native".into();
     let asset_id = db
-        .insert_asset(symbol, name, network.to_id(), contract.0.as_str())
+        .insert_asset(symbol.0.as_str(), name.as_str(), network.to_id(), contract_address.0.as_str())
         .await;
 
     let asset_price = AssetPrice::new(
         Asset::new(
             asset_id,
-            Symbol::new(symbol),
+            symbol,
             name.to_string(),
             network,
-            contract,
+            contract_address,
         ),
         Decimal::from_f64(75_000f64).unwrap(),
     );

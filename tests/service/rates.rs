@@ -1,19 +1,26 @@
-use crate::common::TestApp;
+use crate::common::{AssetFixture, TestApp};
 use itertools::Itertools;
-use portfolio_tracker_backend::model::{Contract, Network, Symbol};
+use portfolio_tracker_backend::model::Asset;
 use serde_json::json;
 use wiremock::matchers::{method, path, path_regex};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[tokio::test]
 async fn fetch_rates_inserts_rates_and_outbox_event() {
-    let network = Network::Solana;
-    let trump_symbol = Symbol::new("TRUMP");
-    let trump_name = "OFFICIAL TRUMP";
-    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
-    let soracat_symbol = Symbol::new("SORACAT");
-    let soracat_name = "SORACAT";
-    let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+    let Asset {
+        id: _,
+        symbol: trump_symbol,
+        name: trump_name,
+        network,
+        contract_address: trump_contract,
+    } = AssetFixture::trump_test_asset();
+    let Asset {
+        id: _,
+        symbol: soracat_symbol,
+        name: soracat_name,
+        network,
+        contract_address: soracat_contract,
+    } = AssetFixture::soracat_test_asset();
 
     let mock_server = MockServer::start().await;
 
@@ -37,14 +44,14 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
 
     db.insert_asset(
         trump_symbol.0.as_str(),
-        trump_name,
+        trump_name.as_str(),
         network.to_id(),
         trump_contract.0.as_str(),
     )
     .await;
     db.insert_asset(
         soracat_symbol.0.as_str(),
-        soracat_name,
+        soracat_name.as_str(),
         network.to_id(),
         soracat_contract.0.as_str(),
     )
@@ -77,6 +84,13 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
 #[tokio::test]
 async fn fetch_rates_handles_missing_price_gracefully() {
     let mock_server = MockServer::start().await;
+    let Asset {
+        id: _,
+        symbol,
+        name,
+        network,
+        contract_address,
+    } = AssetFixture::jitosol_test_asset();
 
     // CG returns null price
     Mock::given(method("GET"))
@@ -84,9 +98,9 @@ async fn fetch_rates_handles_missing_price_gracefully() {
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
             "data": [{
                 "attributes": {
-                    "address": "DeadContractAddress123",
-                    "symbol": "DEADCOIN",
-                    "name": "Dead Coin",
+                    "address": contract_address.0.as_str(),
+                    "symbol": symbol.0.as_str(),
+                    "name": name.as_str(),
                     "price_usd": null
                 }
             }]
@@ -99,8 +113,13 @@ async fn fetch_rates_handles_missing_price_gracefully() {
         router: _,
         db,
     } = TestApp::with_mock_cg_uri(&mock_server.uri()).await;
-    db.insert_asset("DEADCOIN", "Dead Coin", "solana", "DeadContractAddress123")
-        .await;
+    db.insert_asset(
+        symbol.0.as_str(),
+        name.as_str(),
+        network.to_id(),
+        contract_address.0.as_str(),
+    )
+    .await;
 
     let result = state.services.rates_service.fetch_rates_and_persist().await;
     assert!(result.is_ok());

@@ -1,14 +1,17 @@
-use crate::common::TestApp;
+use crate::common::{AssetFixture, TestApp};
 use itertools::Itertools;
-use portfolio_tracker_backend::model::{Contract, Network, Symbol};
+use portfolio_tracker_backend::model::Asset;
 use wiremock::MockServer;
 
 #[tokio::test]
 async fn insert_and_get_asset_should_work() {
-    let network = Network::Solana;
-    let trump_symbol = Symbol::new("TRUMP");
-    let trump_name = "OFFICIAL TRUMP";
-    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
+    let Asset {
+        id: _,
+        symbol,
+        name,
+        network,
+        contract_address,
+    } = AssetFixture::jitosol_test_asset();
 
     let mock_server = MockServer::start().await;
     let TestApp {
@@ -21,10 +24,10 @@ async fn insert_and_get_asset_should_work() {
         .services
         .asset_service
         .insert_asset(
-            trump_symbol.clone(),
-            trump_name.to_string(),
+            symbol.clone(),
+            name.to_string(),
             network,
-            trump_contract.clone(),
+            contract_address.clone(),
         )
         .await
         .unwrap();
@@ -40,11 +43,6 @@ async fn insert_and_get_asset_should_work() {
                 asset.contract_address
             ))
             .collect_vec()[0],
-        (
-            trump_symbol,
-            trump_name.to_string(),
-            network,
-            trump_contract,
-        )
+        (symbol, name.to_string(), network, contract_address)
     );
 }

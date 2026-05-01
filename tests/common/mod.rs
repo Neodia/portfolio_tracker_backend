@@ -7,6 +7,7 @@ use testcontainers::ImageExt;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::postgres::Postgres;
 use uuid::Uuid;
+use portfolio_tracker_backend::model::{Asset, Contract, Network, Symbol};
 
 pub struct DBFixture {
     pub pool: PgPool,
@@ -95,5 +96,38 @@ impl TestApp {
             .register("test@email.com", "password1234")
             .await
             .unwrap()
+    }
+}
+
+pub struct AssetFixture;
+impl AssetFixture {
+    pub fn jitosol_test_asset() -> Asset {
+        Asset::new(
+            Uuid::new_v4(),
+            Symbol::new("JITOSOL"),
+            "Jito Staked Sol".into(),
+            Network::Solana,
+            Contract::from("J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn")
+        )
+    }
+    
+    // Next two for the CG response example
+    pub fn trump_test_asset() -> Asset {
+        Asset::new(
+            Uuid::new_v4(),
+            Symbol::new("TRUMP"),
+            "OFFICIAL TRUMP".into(),
+            Network::Solana,
+            Contract::from("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN")
+        )
+    }
+    pub fn soracat_test_asset() -> Asset {
+        Asset::new(
+            Uuid::new_v4(),
+            Symbol::new("SORACAT"),
+            "SORACAT".into(),
+            Network::Solana,
+            Contract::from("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump")
+        )
     }
 }

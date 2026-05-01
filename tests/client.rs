@@ -8,16 +8,28 @@ use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
+mod common;
+use common::AssetFixture;
 
 #[tokio::test]
 async fn get_prices_per_network_returns_mapped_response() {
     let mock_server = MockServer::start().await;
     let body = std::fs::read_to_string("tests/fixtures/get_prices_from_network_200.json")
         .expect("fixture file not found");
-
-    let network = Network::Solana;
-    let trump_contract = Contract("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN".into());
-    let soracat_contract = Contract("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump".into());
+    let Asset {
+        id: _,
+        symbol: trump_symbol,
+        name: trump_name,
+        network,
+        contract_address: trump_contract,
+    } = AssetFixture::trump_test_asset();
+    let Asset {
+        id: _,
+        symbol: soracat_symbol,
+        name: soracat_name,
+        network,
+        contract_address: soracat_contract,
+    } = AssetFixture::soracat_test_asset();
 
     Mock::given(method("GET"))
         .and(path(format!(
@@ -42,17 +54,17 @@ async fn get_prices_per_network_returns_mapped_response() {
         response.prices,
         vec!(
             BlockchainAssetPrice::new(
-                Symbol("TRUMP".into()),
-                "OFFICIAL TRUMP".to_string(),
+                trump_symbol,
+                trump_name,
                 network,
-                trump_contract.clone(),
+                trump_contract,
                 Decimal::from_f64(7.7593694175f64).unwrap(),
             ),
             BlockchainAssetPrice::new(
-                Symbol("SORACAT".into()),
-                "SORACAT".to_string(),
+                soracat_symbol,
+                soracat_name,
                 network,
-                soracat_contract.clone(),
+                soracat_contract,
                 Decimal::from_f64(0.000006746080385f64).unwrap(),
             ),
         )
