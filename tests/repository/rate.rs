@@ -7,7 +7,7 @@ use rust_decimal::prelude::FromPrimitive;
 use rust_decimal::Decimal;
 
 #[tokio::test]
-async fn get_all_assets_returns_data() {
+async fn insert_rates_works() {
     let db = DBFixture::new().await;
     
     let Asset { id: _, symbol, name, network, contract_address } = AssetFixture::jitosol_test_asset();

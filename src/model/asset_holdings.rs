@@ -1,6 +1,7 @@
 use rust_decimal::Decimal;
 use crate::model::AssetPrice;
 
+#[derive(PartialEq, Debug)]
 pub struct Holding {
     pub amount: Decimal,
     pub value_usd: Decimal,
@@ -15,6 +16,7 @@ impl Holding {
         }
     }
 }
+#[derive(PartialEq, Debug)]
 pub struct AssetHoldings {
     pub asset_price: AssetPrice,
     pub total_value_usd: Decimal,

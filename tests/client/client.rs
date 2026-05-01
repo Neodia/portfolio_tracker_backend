@@ -8,8 +8,7 @@ use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
-mod common;
-use common::AssetFixture;
+use crate::common::AssetFixture;
 
 #[tokio::test]
 async fn get_prices_per_network_returns_mapped_response() {
@@ -20,7 +19,7 @@ async fn get_prices_per_network_returns_mapped_response() {
         id: _,
         symbol: trump_symbol,
         name: trump_name,
-        network,
+        network: _,
         contract_address: trump_contract,
     } = AssetFixture::trump_test_asset();
     let Asset {

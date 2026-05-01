@@ -160,3 +160,159 @@ impl PortfolioService {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::{Asset, AssetPrice, Contract, Holding, Network, Symbol};
+    use rust_decimal::prelude::One;
+
+    // str for exact precision
+    fn decimal(number: &str) -> Decimal {
+        Decimal::from_str_exact(number).unwrap()
+    }
+
+    fn test_fn(
+        total_portfolio_value_usd: Decimal,
+        asset_price: Decimal,
+        expected_drift: Decimal,
+        expected_allocation_pct: Decimal,
+        expected_holding_pct: Decimal,
+    ) {
+        let asset_uuid = Uuid::new_v4();
+        let symbol = Symbol::new("JITOSOL");
+        let name = "Jito Staked Sol";
+        let network = Network::Solana;
+        let contract = Contract::from("J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn");
+        let amount_of_asset = Decimal::one();
+
+        let expected_allocation = AssetAllocation::new(
+            asset_uuid,
+            symbol.clone(),
+            name.into(),
+            network,
+            contract.clone(),
+            expected_allocation_pct,
+        );
+        let expected_allocations_map: HashMap<Uuid, &AssetAllocation> =
+            HashMap::from([(asset_uuid, &expected_allocation)]);
+
+        let holdings = AssetHoldings::new(
+            AssetPrice::new(
+                Asset::new(asset_uuid, symbol, name.into(), network, contract),
+                asset_price,
+            ),
+            asset_price,
+            vec![Holding::new(amount_of_asset, asset_price, None)],
+        );
+
+        let allocation_with_drift = PortfolioService::compute_drift_for_holding(
+            holdings,
+            &expected_allocations_map,
+            total_portfolio_value_usd,
+        );
+        assert_eq!(allocation_with_drift.drift_pct, expected_drift);
+        assert_eq!(
+            allocation_with_drift.expected_allocation_pct,
+            expected_allocation_pct
+        );
+        assert_eq!(
+            allocation_with_drift.total_allocation_pct,
+            expected_holding_pct
+        );
+    }
+
+    #[test]
+    fn drift_is_zero_when_actual_equals_target() {
+        let total_portfolio_value_usd = decimal("1_000.0");
+        let asset_price = decimal("150.0"); // 15% of 1k
+        let expected_drift = decimal("0.0");
+        let expected_allocation_pct = decimal("0.15");
+        let expected_holding_pct = decimal("0.15");
+
+        test_fn(
+            total_portfolio_value_usd,
+            asset_price,
+            expected_drift,
+            expected_allocation_pct,
+            expected_holding_pct,
+        )
+    }
+
+    #[test]
+    fn drift_is_negative_when_actual_lower_than_target() {
+        let total_portfolio_value_usd = decimal("1_000.0");
+        let asset_price = decimal("100.0"); // 10% of 1k
+        let expected_drift = decimal("-0.05"); // 10% - 15%
+        let expected_allocation_pct = decimal("0.15");
+        let expected_holding_pct = decimal("0.1");
+
+        test_fn(
+            total_portfolio_value_usd,
+            asset_price,
+            expected_drift,
+            expected_allocation_pct,
+            expected_holding_pct,
+        )
+    }
+
+    #[test]
+    fn drift_is_positive_when_actual_higher_than_target() {
+        let total_portfolio_value_usd = decimal("1_000.0");
+        let asset_price = decimal("200.0"); // 20% of 1k
+        let expected_drift = decimal("0.05"); // 20% - 15%
+        let expected_allocation_pct = decimal("0.15");
+        let expected_holding_pct = decimal("0.2");
+
+        test_fn(
+            total_portfolio_value_usd,
+            asset_price,
+            expected_drift,
+            expected_allocation_pct,
+            expected_holding_pct,
+        )
+    }
+
+    #[test]
+    fn drift_is_positive_when_no_target() {
+        let total_portfolio_value_usd = decimal("1_000.0");
+        let asset_price = decimal("200.0"); // 20% of 1k
+        let expected_drift = decimal("0.2"); // 20% - 0%
+        let expected_allocation_pct = decimal("0");
+        let expected_holding_pct = decimal("0.2");
+        
+        let asset_uuid = Uuid::new_v4();
+        let symbol = Symbol::new("JITOSOL");
+        let name = "Jito Staked Sol";
+        let network = Network::Solana;
+        let contract = Contract::from("J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn");
+        let amount_of_asset = Decimal::one();
+        
+        let expected_allocations_map: HashMap<Uuid, &AssetAllocation> =
+            HashMap::from([]);
+
+        let holdings = AssetHoldings::new(
+            AssetPrice::new(
+                Asset::new(asset_uuid, symbol, name.into(), network, contract),
+                asset_price,
+            ),
+            asset_price,
+            vec![Holding::new(amount_of_asset, asset_price, None)],
+        );
+
+        let allocation_with_drift = PortfolioService::compute_drift_for_holding(
+            holdings,
+            &expected_allocations_map,
+            total_portfolio_value_usd,
+        );
+        assert_eq!(allocation_with_drift.drift_pct, expected_drift);
+        assert_eq!(
+            allocation_with_drift.expected_allocation_pct,
+            expected_allocation_pct
+        );
+        assert_eq!(
+            allocation_with_drift.total_allocation_pct,
+            expected_holding_pct
+        );
+    }
+}

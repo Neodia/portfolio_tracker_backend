@@ -1,4 +1,5 @@
 mod api;
-pub mod common;
+mod client;
+mod common;
 mod repository;
 mod service;

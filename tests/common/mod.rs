@@ -1,13 +1,24 @@
 use axum::Router;
 use portfolio_tracker_backend::api::router::create_router;
 use portfolio_tracker_backend::appstate::AppState;
+use portfolio_tracker_backend::model::{Asset, Contract, Network, Symbol};
 use portfolio_tracker_backend::service::model::Token;
+use rust_decimal::Decimal;
 use sqlx::PgPool;
-use testcontainers::ImageExt;
 use testcontainers::runners::AsyncRunner;
+use testcontainers::ImageExt;
 use testcontainers_modules::postgres::Postgres;
 use uuid::Uuid;
-use portfolio_tracker_backend::model::{Asset, Contract, Network, Symbol};
+
+pub trait IntoDecimal {
+    fn d(self) -> Decimal;
+}
+
+impl IntoDecimal for &str {
+    fn d(self) -> Decimal {
+        Decimal::from_str_exact(self).unwrap()
+    }
+}
 
 pub struct DBFixture {
     pub pool: PgPool,
@@ -48,11 +59,42 @@ impl DBFixture {
             contract
         )
             .fetch_one(&self.pool)
+            .await
+            .unwrap()
+    }
+    pub async fn with_test_user(&self) -> Uuid {
+        sqlx::query_scalar!(
+            "INSERT INTO users (id, email, password_hash, created_at) VALUES (gen_random_uuid(), 'test@test.com', 'Test User', now()) RETURNING id")
+            .fetch_one(&self.pool)
+            .await
+            .unwrap()
+    }
+    pub async fn with_test_asset(&self, asset: &Asset) -> Uuid {
+        sqlx::query_scalar!(
+            "INSERT INTO assets (id, symbol, name, network, contract_address) VALUES ($1, $2, $3, $4, $5) RETURNING id", asset.id, asset.symbol.0.as_str(), asset.name.as_str(), asset.network.to_id(), asset.contract_address.0.as_str())
+            .fetch_one(&self.pool)
+            .await
+            .unwrap()
+    }
+
+    pub async fn get_user_holdings(&self, user_id: Uuid) -> Vec<HoldingDTO> {
+        sqlx::query_as!(
+            HoldingDTO,
+            "SELECT id, asset_id, amount, description FROM current_holdings WHERE user_id = $1",
+            user_id
+        )
+        .fetch_all(&self.pool)
         .await
         .unwrap()
     }
 }
-
+#[derive(Debug)]
+pub struct HoldingDTO {
+    pub id: Uuid,
+    pub asset_id: Uuid,
+    pub amount: Decimal,
+    pub description: Option<String>,
+}
 pub struct TestApp {
     pub appstate: AppState,
     pub router: Router,
@@ -107,10 +149,19 @@ impl AssetFixture {
             Symbol::new("JITOSOL"),
             "Jito Staked Sol".into(),
             Network::Solana,
-            Contract::from("J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn")
+            Contract::from("J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"),
         )
     }
-    
+    pub fn weth_test_asset() -> Asset {
+        Asset::new(
+            Uuid::new_v4(),
+            Symbol::new("WETH"),
+            "Wrapped Ethereum".into(),
+            Network::Ethereum,
+            Contract::from("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"),
+        )
+    }
+
     // Next two for the CG response example
     pub fn trump_test_asset() -> Asset {
         Asset::new(
@@ -118,7 +169,7 @@ impl AssetFixture {
             Symbol::new("TRUMP"),
             "OFFICIAL TRUMP".into(),
             Network::Solana,
-            Contract::from("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN")
+            Contract::from("6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN"),
         )
     }
     pub fn soracat_test_asset() -> Asset {
@@ -127,7 +178,7 @@ impl AssetFixture {
             Symbol::new("SORACAT"),
             "SORACAT".into(),
             Network::Solana,
-            Contract::from("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump")
+            Contract::from("2g4LS3y2myPe6vj9wTvoBE1wKqxvhnZPoZA9QU9upump"),
         )
     }
 }

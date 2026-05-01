@@ -3,7 +3,7 @@ use serde::Serialize;
 use uuid::Uuid;
 use crate::model::{Asset, Contract, Network, Symbol};
 
-#[derive(Serialize)]
+#[derive(Serialize, PartialEq, Debug)]
 pub struct AssetAllocation {
     pub asset: Asset,
     pub allocation_pct: Decimal, // Percentage

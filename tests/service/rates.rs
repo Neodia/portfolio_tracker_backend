@@ -11,7 +11,7 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
         id: _,
         symbol: trump_symbol,
         name: trump_name,
-        network,
+        network: _,
         contract_address: trump_contract,
     } = AssetFixture::trump_test_asset();
     let Asset {
