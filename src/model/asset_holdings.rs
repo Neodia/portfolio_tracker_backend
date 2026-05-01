@@ -1,0 +1,31 @@
+use rust_decimal::Decimal;
+use crate::model::AssetPrice;
+
+pub struct Holding {
+    pub amount: Decimal,
+    pub value_usd: Decimal,
+    pub description: Option<String>,
+}
+impl Holding {
+    pub fn new(amount: Decimal, value_usd: Decimal, description: Option<String>) -> Self {
+        Self {
+            amount,
+            value_usd,
+            description,
+        }
+    }
+}
+pub struct AssetHoldings {
+    pub asset_price: AssetPrice,
+    pub total_value_usd: Decimal,
+    pub holdings: Vec<Holding>,
+}
+impl AssetHoldings {
+    pub fn new(asset_price: AssetPrice, total_value_usd: Decimal, holdings: Vec<Holding>) -> Self {
+        Self {
+            asset_price,
+            total_value_usd,
+            holdings,
+        }
+    }
+}

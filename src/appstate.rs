@@ -3,6 +3,7 @@ use crate::model::error::AppError;
 use crate::repository::Repositories;
 use crate::service::Services;
 use crate::service::asset::AssetService;
+use crate::service::portfolio::PortfolioService;
 use crate::service::rates::RatesService;
 use crate::service::user::UserService;
 use sqlx::PgPool;
@@ -41,6 +42,7 @@ impl AppState {
                 asset_service: AssetService::new(repositories.asset.clone()),
                 user_service: UserService::new(repositories.user.clone(), jwt_secret),
                 rates_service: RatesService::new(repositories.clone(), cg_client),
+                portfolio_service: PortfolioService::new(repositories.clone()),
             },
         }
     }

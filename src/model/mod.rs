@@ -1,18 +1,30 @@
 mod asset;
+mod asset_allocation;
+mod asset_holdings;
+mod asset_holdings_with_drift;
 mod asset_price;
 mod claims;
 mod contract;
 pub mod error;
 mod network;
+mod portfolio;
+mod portfolio_holdings;
+mod portfolio_value_at;
 mod symbol;
 #[cfg(test)]
 mod tests;
 mod user;
 
 pub use asset::*;
+pub use asset_allocation::*;
+pub use asset_holdings::*;
+pub use asset_holdings_with_drift::*;
 pub use asset_price::*;
 pub use claims::*;
 pub use contract::*;
 pub use network::*;
+pub use portfolio::*;
+pub use portfolio_holdings::*;
+pub use portfolio_value_at::*;
 pub use symbol::*;
 pub use user::*;

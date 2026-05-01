@@ -12,7 +12,8 @@ mod model;
 
 use crate::repository::error::DBError;
 use crate::repository::live::{
-    LiveAssetRepository, LiveOutboxRepository, LiveRateRepository, LiveUserRepository,
+    LiveAssetRepository, LiveOutboxRepository, LivePortfolioRepository, LiveRateRepository,
+    LiveUserRepository,
 };
 use sqlx::{PgPool, PgTransaction};
 
@@ -23,6 +24,7 @@ pub struct Repositories {
     pub user: LiveUserRepository,
     pub rate: LiveRateRepository,
     pub outbox: LiveOutboxRepository,
+    pub portfolio: LivePortfolioRepository,
 }
 
 impl Repositories {
@@ -37,6 +39,7 @@ impl Repositories {
             user: LiveUserRepository::new_from_pool(pool.clone()),
             rate: LiveRateRepository::default(),
             outbox: LiveOutboxRepository::default(),
+            portfolio: LivePortfolioRepository::new_from_pool(pool.clone()),
         }
     }
     pub async fn begin_transaction(&self) -> Result<PgTransaction<'_>, DBError> {

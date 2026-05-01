@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use strum::IntoEnumIterator;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter, strum::Display)]
@@ -35,6 +35,15 @@ impl Network {
 
     pub fn from_id(id: &str) -> Option<Network> {
         Network::iter().find(|network| network.to_id() == id)
+    }
+}
+impl Serialize for Network {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeStruct;
+        let mut state = s.serialize_struct("Network", 2)?;
+        state.serialize_field("id", self.to_id())?;
+        state.serialize_field("display_name", &self.to_string())?;
+        state.end()
     }
 }
 
