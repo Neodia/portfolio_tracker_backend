@@ -161,6 +161,15 @@ impl AssetFixture {
             Contract::from("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"),
         )
     }
+    pub fn usdc_test_asset() -> Asset {
+        Asset::new(
+            Uuid::new_v4(),
+            Symbol::new("USDC"),
+            "USDC".into(),
+            Network::Base,
+            Contract::from("0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"),
+        )
+    }
 
     // Next two for the CG response example
     pub fn trump_test_asset() -> Asset {

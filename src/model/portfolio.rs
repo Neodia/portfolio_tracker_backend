@@ -1,7 +1,7 @@
 use serde::Serialize;
 use crate::model::{AssetAllocation, PortfolioHoldings, PortfolioValueAt};
 
-#[derive(Serialize)]
+#[derive(Serialize, PartialEq, Debug)]
 pub struct PortfolioResponse {
     pub expected_asset_allocations: Vec<AssetAllocation>,
     pub holdings: PortfolioHoldings,

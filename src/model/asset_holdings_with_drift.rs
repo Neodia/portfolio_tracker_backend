@@ -2,7 +2,7 @@ use rust_decimal::Decimal;
 use serde::Serialize;
 use crate::model::AssetPrice;
 
-#[derive(Serialize)]
+#[derive(Serialize, PartialEq, Debug)]
 pub struct HoldingWithAllocation {
     pub amount: Decimal,
     pub value_usd: Decimal,
@@ -24,7 +24,7 @@ impl HoldingWithAllocation {
         }
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, PartialEq, Debug)]
 pub struct AssetHoldingsWithDrift {
     pub asset_price: AssetPrice,
     pub total_value_usd: Decimal,

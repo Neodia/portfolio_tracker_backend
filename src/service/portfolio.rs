@@ -9,6 +9,7 @@ use chrono::Utc;
 use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use std::collections::HashMap;
+use itertools::Itertools;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -105,6 +106,7 @@ impl PortfolioService {
                     total_portfolio_value_usd,
                 )
             })
+            .sorted_by_key(|holding| -holding.total_value_usd) // Sorted from biggest holding to lowest
             .collect();
 
         let user_holdings =

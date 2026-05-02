@@ -69,7 +69,7 @@ impl PortfolioRepository for LivePortfolioRepository {
              FROM expected_portfolio_allocations as alloc
              INNER JOIN assets ON alloc.asset_id = assets.id
              WHERE alloc.user_id = $1
-             ORDER BY alloc.percentage DESC",
+             ORDER BY alloc.percentage DESC, assets.symbol",
             user_id,
         ).fetch_all(&self.pool).await?
             .into_iter()
@@ -151,7 +151,7 @@ impl PortfolioRepository for LivePortfolioRepository {
             FROM current_holdings as holding
             INNER JOIN assets ON assets.id = holding.asset_id
             INNER JOIN latest_rates ON latest_rates.asset_id = holding.asset_id
-            WHERE holding.user_id = $1"    ,
+            WHERE holding.user_id = $1",
             user_id
         ).fetch_all(&self.pool)
             .await?

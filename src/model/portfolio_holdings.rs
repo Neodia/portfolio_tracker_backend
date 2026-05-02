@@ -2,7 +2,7 @@ use crate::model::AssetHoldingsWithDrift;
 use rust_decimal::Decimal;
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, PartialEq, Debug)]
 pub struct PortfolioHoldings {
     pub holdings: Vec<AssetHoldingsWithDrift>,
     pub portfolio_value_usd: Decimal,
