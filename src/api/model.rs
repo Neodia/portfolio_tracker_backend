@@ -1,7 +1,7 @@
+use crate::model::ids::AssetId;
 use crate::model::{Contract, Network, Symbol};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use validator::Validate;
 
 #[derive(Deserialize, Clone, Debug, Validate)]
@@ -47,7 +47,7 @@ pub struct AddExpectedAllocationRequest {
 }
 #[derive(Deserialize, Clone, Debug, Validate)]
 pub struct AddHoldingRequest {
-    pub asset_id: Uuid,
+    pub asset_id: AssetId,
     pub amount: Decimal,
     pub description: Option<String>,
 }

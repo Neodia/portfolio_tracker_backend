@@ -1,7 +1,7 @@
+use crate::model::ids::AssetId;
+use crate::model::{Asset, Contract, Network, Symbol};
 use rust_decimal::Decimal;
 use serde::Serialize;
-use uuid::Uuid;
-use crate::model::{Asset, Contract, Network, Symbol};
 
 #[derive(Serialize, PartialEq, Debug)]
 pub struct AssetAllocation {
@@ -10,7 +10,7 @@ pub struct AssetAllocation {
 }
 impl AssetAllocation {
     pub fn new(
-        id: Uuid,
+        id: AssetId,
         symbol: Symbol,
         name: String,
         network: Network,

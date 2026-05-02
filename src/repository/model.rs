@@ -1,9 +1,9 @@
+use crate::model::ids::{AssetId, HoldingId};
 use crate::model::{Contract, Symbol};
 use rust_decimal::Decimal;
-use uuid::Uuid;
 
 pub struct BlockchainAssetDTO {
-    pub id: Uuid,
+    pub id: AssetId,
     pub symbol: Symbol,
     pub name: String,
     pub network: String,
@@ -11,7 +11,7 @@ pub struct BlockchainAssetDTO {
 }
 
 pub struct AssetAllocationDTO {
-    pub id: Uuid,
+    pub id: AssetId,
     pub symbol: Symbol,
     pub name: String,
     pub network: String,
@@ -20,7 +20,8 @@ pub struct AssetAllocationDTO {
 }
 
 pub struct HoldingDTO {
-    pub asset_id: Uuid,
+    pub id: HoldingId,
+    pub asset_id: AssetId,
     pub symbol: Symbol,
     pub name: String,
     pub network: String,

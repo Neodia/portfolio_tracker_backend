@@ -1,3 +1,4 @@
+use crate::model::ids::{AssetId, HoldingId, UserId};
 use crate::model::{AssetAllocation, AssetHoldings};
 use crate::repository::error::DBError;
 use crate::repository::model::{AssetAllocationDTO, HoldingDTO};
@@ -6,7 +7,6 @@ use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use rust_decimal::Decimal;
 use sqlx::PgPool;
-use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct LivePortfolioRepository {
@@ -22,8 +22,8 @@ impl LivePortfolioRepository {
 impl PortfolioRepository for LivePortfolioRepository {
     async fn upsert_expected_asset_allocation(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
         percentage: Decimal,
         now: DateTime<Utc>,
     ) -> Result<(), DBError> {
@@ -32,8 +32,8 @@ impl PortfolioRepository for LivePortfolioRepository {
              VALUES ($1, $2, $3, $4)
              ON CONFLICT (user_id, asset_id)
              DO UPDATE SET percentage = $3, updated_at = $4",
-            user_id,
-            asset_id,
+            user_id.0,
+            asset_id.0,
             percentage,
             now
         )
@@ -44,15 +44,15 @@ impl PortfolioRepository for LivePortfolioRepository {
 
     async fn delete_expected_asset_allocation(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
     ) -> Result<(), DBError> {
         sqlx::query!(
             "DELETE FROM expected_portfolio_allocations
              WHERE user_id = $1
              AND asset_id = $2",
-            user_id,
-            asset_id,
+            user_id.0,
+            asset_id.0,
         )
         .execute(&self.pool)
         .await?;
@@ -61,7 +61,7 @@ impl PortfolioRepository for LivePortfolioRepository {
 
     async fn get_expected_asset_allocations(
         &self,
-        user_id: Uuid,
+        user_id: UserId,
     ) -> Result<Vec<AssetAllocation>, DBError> {
         let result = sqlx::query_as!(
             AssetAllocationDTO,
@@ -70,7 +70,7 @@ impl PortfolioRepository for LivePortfolioRepository {
              INNER JOIN assets ON alloc.asset_id = assets.id
              WHERE alloc.user_id = $1
              ORDER BY alloc.percentage DESC, assets.symbol",
-            user_id,
+            user_id.0,
         ).fetch_all(&self.pool).await?
             .into_iter()
             .map(TryInto::try_into)
@@ -80,30 +80,32 @@ impl PortfolioRepository for LivePortfolioRepository {
 
     async fn insert_holding(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
         amount: Decimal,
         description: Option<String>,
         now: DateTime<Utc>,
-    ) -> Result<(), DBError> {
-        sqlx::query!(
+    ) -> Result<HoldingId, DBError> {
+        let id = sqlx::query_scalar!(
             "INSERT INTO current_holdings (id, user_id, asset_id, amount, description, updated_at)
-             VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)",
-            user_id,
-            asset_id,
+             VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)
+             RETURNING id",
+            user_id.0,
+            asset_id.0,
             amount,
             description,
             now
         )
-        .execute(&self.pool)
-        .await?;
-        Ok(())
+        .fetch_one(&self.pool)
+        .await
+        .map(From::from)?;
+        Ok(id)
     }
 
     async fn update_holding(
         &self,
-        holding_id: Uuid,
-        user_id: Uuid,
+        holding_id: HoldingId,
+        user_id: UserId,
         amount: Decimal,
         description: Option<String>,
         now: DateTime<Utc>,
@@ -116,28 +118,28 @@ impl PortfolioRepository for LivePortfolioRepository {
             amount,
             description,
             now,
-            holding_id,
-            user_id,
+            holding_id.0,
+            user_id.0,
         )
         .execute(&self.pool)
         .await?;
         Ok(())
     }
 
-    async fn delete_holding(&self, holding_id: Uuid, user_id: Uuid) -> Result<(), DBError> {
+    async fn delete_holding(&self, holding_id: HoldingId, user_id: UserId) -> Result<(), DBError> {
         sqlx::query!(
             "DELETE FROM current_holdings
              WHERE id = $1
              AND user_id = $2",
-            holding_id,
-            user_id,
+            holding_id.0,
+            user_id.0,
         )
         .execute(&self.pool)
         .await?;
         Ok(())
     }
 
-    async fn get_holdings(&self, user_id: Uuid) -> Result<Vec<AssetHoldings>, DBError> {
+    async fn get_holdings(&self, user_id: UserId) -> Result<Vec<AssetHoldings>, DBError> {
         let holdings = sqlx::query_as!(
             HoldingDTO,
             "WITH latest_rates AS (
@@ -147,12 +149,12 @@ impl PortfolioRepository for LivePortfolioRepository {
                 FROM rates
                 ORDER BY asset_id, rate_at DESC
             )
-            SELECT assets.id as asset_id, assets.symbol, assets.name, assets.network, assets.contract_address, holding.amount, holding.description, latest_rates.rate_usd
+            SELECT holding.id, assets.id as asset_id, assets.symbol, assets.name, assets.network, assets.contract_address, holding.amount, holding.description, latest_rates.rate_usd
             FROM current_holdings as holding
             INNER JOIN assets ON assets.id = holding.asset_id
             INNER JOIN latest_rates ON latest_rates.asset_id = holding.asset_id
             WHERE holding.user_id = $1",
-            user_id
+            user_id.0
         ).fetch_all(&self.pool)
             .await?
             .into_iter().into_group_map_by(|asset| asset.asset_id)

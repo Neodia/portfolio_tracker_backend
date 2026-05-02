@@ -14,6 +14,7 @@ mod symbol;
 #[cfg(test)]
 mod tests;
 mod user;
+pub mod ids;
 
 pub use asset::*;
 pub use asset_allocation::*;

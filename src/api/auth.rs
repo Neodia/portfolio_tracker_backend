@@ -1,13 +1,12 @@
-// src/api/auth.rs
 use crate::appstate::AppState;
 use crate::auth::{decode_claims, extract_bearer_token};
 use crate::model::error::AppError;
+use crate::model::ids::UserId;
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
-use uuid::Uuid;
 
 pub struct AuthenticatedUser {
-    pub id: Uuid,
+    pub id: UserId,
 }
 
 impl FromRequestParts<AppState> for AuthenticatedUser {

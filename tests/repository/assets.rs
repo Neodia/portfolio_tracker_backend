@@ -1,8 +1,8 @@
 use crate::common::{AssetFixture, DBFixture};
+use portfolio_tracker_backend::model::ids::AssetId;
 use portfolio_tracker_backend::model::Asset;
-use portfolio_tracker_backend::repository::AssetRepository;
 use portfolio_tracker_backend::repository::live::LiveAssetRepository;
-use uuid::Uuid;
+use portfolio_tracker_backend::repository::AssetRepository;
 
 #[tokio::test]
 async fn get_all_assets_returns_data_after_inserting() {
@@ -28,7 +28,7 @@ async fn get_all_assets_returns_data_after_inserting() {
     let assets = repo.get_all_assets().await.unwrap();
 
     assert!(assets.first().unwrap().is_same_asset(&Asset::new(
-        Uuid::nil(),
+        AssetId::new(),
         symbol,
         name.to_string(),
         network,

@@ -102,7 +102,7 @@ async fn get_portfolio_works() {
         .unwrap();
 
     // Populate holdings [No WETH]
-    appstate
+    let jitosol_holding_id = appstate
         .services
         .portfolio_service
         .insert_holding(
@@ -113,7 +113,7 @@ async fn get_portfolio_works() {
         )
         .await
         .unwrap();
-    appstate
+    let usdc_holding_id = appstate
         .services
         .portfolio_service
         .insert_holding(
@@ -157,6 +157,7 @@ async fn get_portfolio_works() {
                 usdc_rate,
                 usdc_amount * usdc_rate_usd,
                 vec![HoldingWithAllocation::new(
+                    usdc_holding_id,
                     usdc_amount,
                     usdc_amount * usdc_rate_usd,
                     usdc_description,
@@ -170,6 +171,7 @@ async fn get_portfolio_works() {
                 jitosol_rate,
                 jitosol_amount * jitosol_rate_usd,
                 vec![HoldingWithAllocation::new(
+                    jitosol_holding_id,
                     jitosol_amount,
                     jitosol_amount * jitosol_rate_usd,
                     jitosol_description,

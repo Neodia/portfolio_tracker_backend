@@ -1,6 +1,6 @@
 use crate::model::AssetPrice;
-use crate::repository::RateRepository;
 use crate::repository::error::DBError;
+use crate::repository::RateRepository;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use sqlx::PgTransaction;
@@ -15,7 +15,7 @@ impl RateRepository for LiveRateRepository {
         rates: Vec<AssetPrice>,
         now: DateTime<Utc>,
     ) -> Result<(), DBError> {
-        let asset_ids: Vec<Uuid> = rates.iter().map(|r| r.asset.id).collect();
+        let asset_ids: Vec<Uuid> = rates.iter().map(|r| r.asset.id.0).collect();
         let asset_rates: Vec<Decimal> = rates.iter().map(|r| r.price_usd).collect();
 
         sqlx::query!(

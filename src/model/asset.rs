@@ -1,11 +1,11 @@
+use crate::model::ids::AssetId;
 use crate::model::{Contract, Network, Symbol};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
-use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone, Serialize)]
 pub struct Asset {
-    pub id: Uuid,
+    pub id: AssetId,
     pub symbol: Symbol,
     pub name: String,
     pub network: Network,
@@ -14,7 +14,7 @@ pub struct Asset {
 
 impl Asset {
     pub fn new(
-        id: Uuid,
+        id: AssetId,
         symbol: Symbol,
         name: String,
         network: Network,

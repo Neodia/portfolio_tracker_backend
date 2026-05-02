@@ -57,7 +57,7 @@ impl TryFrom<Vec<HoldingDTO>> for AssetHoldings {
             .sum();
         let holdings = holdings
             .into_iter()
-            .map(|h| Holding::new(h.amount, h.amount * h.rate_usd, h.description))
+            .map(|h| Holding::new(h.id, h.amount, h.amount * h.rate_usd, h.description))
             .collect();
 
         Ok(AssetHoldings::new(asset_price, total_value_usd, holdings))

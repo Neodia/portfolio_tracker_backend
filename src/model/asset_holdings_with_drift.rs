@@ -1,9 +1,11 @@
 use rust_decimal::Decimal;
 use serde::Serialize;
 use crate::model::AssetPrice;
+use crate::model::ids::HoldingId;
 
 #[derive(Serialize, PartialEq, Debug)]
 pub struct HoldingWithAllocation {
+    pub id: HoldingId,
     pub amount: Decimal,
     pub value_usd: Decimal,
     pub description: Option<String>,
@@ -11,12 +13,14 @@ pub struct HoldingWithAllocation {
 }
 impl HoldingWithAllocation {
     pub fn new(
+        id: HoldingId,
         amount: Decimal,
         value_usd: Decimal,
         description: Option<String>,
         current_allocation_pct: Decimal,
     ) -> Self {
         Self {
+            id,
             amount,
             value_usd,
             description,

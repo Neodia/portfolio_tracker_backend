@@ -1,10 +1,10 @@
+use crate::model::ids::{AssetId, HoldingId, UserId};
 use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetPrice, Contract, Network, Symbol, User};
 use crate::repository::error::DBError;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use sqlx::PgTransaction;
 use std::future::Future;
-use uuid::Uuid;
 
 pub trait AssetRepository: Clone {
     fn get_all_assets(&self) -> impl Future<Output = Result<Vec<Asset>, DBError>>;
@@ -46,41 +46,41 @@ pub trait OutboxRepository: Clone {
 pub trait PortfolioRepository: Clone {
     fn upsert_expected_asset_allocation(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
         percentage: Decimal,
         now: DateTime<Utc>,
     ) -> impl Future<Output = Result<(), DBError>>;
     fn delete_expected_asset_allocation(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
     ) -> impl Future<Output = Result<(), DBError>>;
     fn get_expected_asset_allocations(
         &self,
-        user_id: Uuid,
+        user_id: UserId,
     ) -> impl Future<Output = Result<Vec<AssetAllocation>, DBError>>;
 
     fn insert_holding(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
         amount: Decimal,
         description: Option<String>,
         now: DateTime<Utc>,
-    ) -> impl Future<Output = Result<(), DBError>>;
+    ) -> impl Future<Output = Result<HoldingId, DBError>>;
     fn update_holding(
         &self,
-        holding_id: Uuid,
-        user_id: Uuid,
+        holding_id: HoldingId,
+        user_id: UserId,
         amount: Decimal,
         description: Option<String>,
         now: DateTime<Utc>,
     ) -> impl Future<Output = Result<(), DBError>>;
     fn delete_holding(
         &self,
-        holding_id: Uuid,
-        user_id: Uuid,
+        holding_id: HoldingId,
+        user_id: UserId,
     ) -> impl Future<Output = Result<(), DBError>>;
-    fn get_holdings(&self, user_id: Uuid) -> impl Future<Output = Result<Vec<AssetHoldings>, DBError>>;
+    fn get_holdings(&self, user_id: UserId) -> impl Future<Output = Result<Vec<AssetHoldings>, DBError>>;
 }

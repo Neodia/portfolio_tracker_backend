@@ -42,6 +42,6 @@ async fn insert_rates_works() {
 
     assert_eq!(
         (resp.asset_id, resp.rate_usd, resp.rate_at),
-        (asset_id, asset_price.price_usd, now)
+        (asset_id.0, asset_price.price_usd, now)
     );
 }

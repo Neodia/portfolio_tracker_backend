@@ -1,4 +1,5 @@
 use crate::model::error::AppError;
+use crate::model::ids::{AssetId, HoldingId, UserId};
 use crate::model::{
     AssetAllocation, AssetHoldings, AssetHoldingsWithDrift, HoldingWithAllocation,
     PortfolioHoldings, PortfolioResponse,
@@ -6,11 +7,10 @@ use crate::model::{
 use crate::repository::traits::PortfolioRepository;
 use crate::repository::Repositories;
 use chrono::Utc;
+use itertools::Itertools;
 use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use std::collections::HashMap;
-use itertools::Itertools;
-use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct PortfolioService {
@@ -22,8 +22,8 @@ impl PortfolioService {
     }
     pub async fn upsert_expected_asset_allocation(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
         percentage: Decimal,
     ) -> Result<(), AppError> {
         let now = Utc::now();
@@ -35,8 +35,8 @@ impl PortfolioService {
     }
     pub async fn delete_expected_asset_allocation(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
     ) -> Result<(), AppError> {
         self.repositories
             .portfolio
@@ -47,22 +47,22 @@ impl PortfolioService {
 
     pub async fn insert_holding(
         &self,
-        user_id: Uuid,
-        asset_id: Uuid,
+        user_id: UserId,
+        asset_id: AssetId,
         amount: Decimal,
         description: Option<String>,
-    ) -> Result<(), AppError> {
+    ) -> Result<HoldingId, AppError> {
         let now = Utc::now();
-        self.repositories
+        let id = self.repositories
             .portfolio
             .insert_holding(user_id, asset_id, amount, description, now)
             .await?;
-        Ok(())
+        Ok(id)
     }
     pub async fn update_holding(
         &self,
-        user_id: Uuid,
-        holding_id: Uuid,
+        user_id: UserId,
+        holding_id: HoldingId,
         amount: Decimal,
         description: Option<String>,
     ) -> Result<(), AppError> {
@@ -73,15 +73,15 @@ impl PortfolioService {
             .await?;
         Ok(())
     }
-    pub async fn delete_holding(&self, user_id: Uuid, holding_id: Uuid) -> Result<(), AppError> {
+    pub async fn delete_holding(&self, user_id: UserId, holding_id: HoldingId) -> Result<(), AppError> {
         self.repositories
             .portfolio
-            .delete_holding(user_id, holding_id)
+            .delete_holding(holding_id, user_id)
             .await?;
         Ok(())
     }
 
-    pub async fn get_portfolio(&self, user_id: Uuid) -> Result<PortfolioResponse, AppError> {
+    pub async fn get_portfolio(&self, user_id: UserId) -> Result<PortfolioResponse, AppError> {
         let (expected_allocations, holdings) = tokio::try_join!(
             self.repositories
                 .portfolio
@@ -89,7 +89,7 @@ impl PortfolioService {
             self.repositories.portfolio.get_holdings(user_id),
         )?;
 
-        let expected_allocations_map: HashMap<Uuid, &AssetAllocation> = expected_allocations
+        let expected_allocations_map: HashMap<AssetId, &AssetAllocation> = expected_allocations
             .iter()
             .map(|alloc| (alloc.asset.id, alloc))
             .collect();
@@ -121,7 +121,7 @@ impl PortfolioService {
 
     fn compute_drift_for_holding(
         holdings: AssetHoldings,
-        expected_allocations_map: &HashMap<Uuid, &AssetAllocation>,
+        expected_allocations_map: &HashMap<AssetId, &AssetAllocation>,
         total_portfolio_value_usd: Decimal,
     ) -> AssetHoldingsWithDrift {
         let expected_allocation_opt = expected_allocations_map
@@ -138,6 +138,7 @@ impl PortfolioService {
                     .checked_div(total_portfolio_value_usd)
                     .unwrap_or(Decimal::zero());
                 HoldingWithAllocation::new(
+                    holding.id,
                     holding.amount,
                     holding.value_usd,
                     holding.description.clone(),
@@ -166,6 +167,7 @@ impl PortfolioService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::ids::HoldingId;
     use crate::model::{Asset, AssetPrice, Contract, Holding, Network, Symbol};
     use rust_decimal::prelude::One;
 
@@ -181,7 +183,7 @@ mod tests {
         expected_allocation_pct: Decimal,
         expected_holding_pct: Decimal,
     ) {
-        let asset_uuid = Uuid::new_v4();
+        let asset_id = AssetId::new();
         let symbol = Symbol::new("JITOSOL");
         let name = "Jito Staked Sol";
         let network = Network::Solana;
@@ -189,23 +191,24 @@ mod tests {
         let amount_of_asset = Decimal::one();
 
         let expected_allocation = AssetAllocation::new(
-            asset_uuid,
+            asset_id,
             symbol.clone(),
             name.into(),
             network,
             contract.clone(),
             expected_allocation_pct,
         );
-        let expected_allocations_map: HashMap<Uuid, &AssetAllocation> =
-            HashMap::from([(asset_uuid, &expected_allocation)]);
+        let expected_allocations_map: HashMap<AssetId, &AssetAllocation> =
+            HashMap::from([(asset_id, &expected_allocation)]);
 
+        let holding_id = HoldingId::new();
         let holdings = AssetHoldings::new(
             AssetPrice::new(
-                Asset::new(asset_uuid, symbol, name.into(), network, contract),
+                Asset::new(asset_id, symbol, name.into(), network, contract),
                 asset_price,
             ),
             asset_price,
-            vec![Holding::new(amount_of_asset, asset_price, None)],
+            vec![Holding::new(holding_id, amount_of_asset, asset_price, None)],
         );
 
         let allocation_with_drift = PortfolioService::compute_drift_for_holding(
@@ -282,24 +285,25 @@ mod tests {
         let expected_drift = decimal("0.2"); // 20% - 0%
         let expected_allocation_pct = decimal("0");
         let expected_holding_pct = decimal("0.2");
-        
-        let asset_uuid = Uuid::new_v4();
+
+        let asset_id = AssetId::new();
         let symbol = Symbol::new("JITOSOL");
         let name = "Jito Staked Sol";
         let network = Network::Solana;
         let contract = Contract::from("J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn");
         let amount_of_asset = Decimal::one();
-        
-        let expected_allocations_map: HashMap<Uuid, &AssetAllocation> =
+
+        let expected_allocations_map: HashMap<AssetId, &AssetAllocation> =
             HashMap::from([]);
 
+        let holding_id = HoldingId::new();
         let holdings = AssetHoldings::new(
             AssetPrice::new(
-                Asset::new(asset_uuid, symbol, name.into(), network, contract),
+                Asset::new(asset_id, symbol, name.into(), network, contract),
                 asset_price,
             ),
             asset_price,
-            vec![Holding::new(amount_of_asset, asset_price, None)],
+            vec![Holding::new(holding_id, amount_of_asset, asset_price, None)],
         );
 
         let allocation_with_drift = PortfolioService::compute_drift_for_holding(

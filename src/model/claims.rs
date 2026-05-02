@@ -1,9 +1,9 @@
+use crate::model::ids::UserId;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: Uuid,
+    pub sub: UserId,
     pub exp: i64,
     pub iat: i64,
 }

@@ -1,13 +1,13 @@
-use crate::model::Claims;
 use crate::model::error::{AppError, BusinessError};
+use crate::model::ids::UserId;
+use crate::model::Claims;
 use crate::service::model::Token;
-use argon2::password_hash::SaltString;
 use argon2::password_hash::rand_core::OsRng;
+use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::HeaderMap;
 use chrono::{Duration, Utc};
-use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use uuid::Uuid;
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 
 pub fn hash_password(password: &str) -> Result<String, AppError> {
     let salt = SaltString::generate(&mut OsRng);
@@ -27,7 +27,7 @@ pub fn verify_password(password: &str, hash: &str) -> Result<(), AppError> {
     Ok(())
 }
 
-pub fn create_token(user_id: Uuid, secret: &str) -> Result<Token, AppError> {
+pub fn create_token(user_id: UserId, secret: &str) -> Result<Token, AppError> {
     let now = Utc::now();
     let expiry = now + Duration::hours(24);
 

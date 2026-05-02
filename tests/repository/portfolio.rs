@@ -204,7 +204,7 @@ async fn get_holdings_works() {
     tx.commit().await.unwrap();
 
     // Populate Holdings
-    portfolio_repo
+    let jitosol_holding_id = portfolio_repo
         .insert_holding(
             user_id,
             jitosol_asset_id,
@@ -214,7 +214,7 @@ async fn get_holdings_works() {
         )
         .await
         .unwrap();
-    portfolio_repo
+    let weth_holding_id = portfolio_repo
         .insert_holding(
             user_id,
             weth_asset_id,
@@ -239,6 +239,7 @@ async fn get_holdings_works() {
                 jitosol_rate,
                 jitosol_rate_usd * jitosol_amount,
                 vec!(Holding::new(
+                    jitosol_holding_id,
                     jitosol_amount,
                     jitosol_rate_usd * jitosol_amount,
                     jitosol_description
@@ -248,6 +249,7 @@ async fn get_holdings_works() {
                 weth_rate,
                 weth_rate_usd * weth_amount,
                 vec!(Holding::new(
+                    weth_holding_id,
                     weth_amount,
                     weth_rate_usd * weth_amount,
                     weth_description

@@ -1,17 +1,17 @@
-use crate::api::ValidatedJson;
 use crate::api::auth::AuthenticatedUser;
 use crate::api::model::{AddExpectedAllocationRequest, AddHoldingRequest, UpdateHoldingRequest};
+use crate::api::ValidatedJson;
 use crate::appstate::AppState;
-use crate::model::PortfolioResponse;
 use crate::model::error::AppError;
-use axum::Json;
+use crate::model::ids::{AssetId, HoldingId};
+use crate::model::PortfolioResponse;
 use axum::extract::{Path, State};
-use uuid::Uuid;
+use axum::Json;
 
 pub async fn upsert_expected_asset_allocation(
     State(state): State<AppState>,
     user: AuthenticatedUser,
-    Path(asset_id): Path<Uuid>,
+    Path(asset_id): Path<AssetId>,
     ValidatedJson(req): ValidatedJson<AddExpectedAllocationRequest>,
 ) -> Result<Json<()>, AppError> {
     let response = state
@@ -24,7 +24,7 @@ pub async fn upsert_expected_asset_allocation(
 pub async fn delete_expected_asset_allocation(
     State(state): State<AppState>,
     user: AuthenticatedUser,
-    Path(asset_id): Path<Uuid>,
+    Path(asset_id): Path<AssetId>,
 ) -> Result<Json<()>, AppError> {
     let response = state
         .services
@@ -38,17 +38,17 @@ pub async fn insert_holding(
     user: AuthenticatedUser,
     ValidatedJson(req): ValidatedJson<AddHoldingRequest>,
 ) -> Result<Json<()>, AppError> {
-    let response = state
+    state
         .services
         .portfolio_service
         .insert_holding(user.id, req.asset_id, req.amount, req.description)
         .await?;
-    Ok(Json(response))
+    Ok(Json(()))
 }
 pub async fn update_holding(
     State(state): State<AppState>,
     user: AuthenticatedUser,
-    Path(holding_id): Path<Uuid>,
+    Path(holding_id): Path<HoldingId>,
     ValidatedJson(req): ValidatedJson<UpdateHoldingRequest>,
 ) -> Result<Json<()>, AppError> {
     let response = state
@@ -66,7 +66,7 @@ pub async fn update_holding(
 pub async fn delete_holding(
     State(state): State<AppState>,
     user: AuthenticatedUser,
-    Path(holding_id): Path<Uuid>,
+    Path(holding_id): Path<HoldingId>,
 ) -> Result<Json<()>, AppError> {
     let response = state
         .services

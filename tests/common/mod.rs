@@ -1,6 +1,7 @@
 use axum::Router;
 use portfolio_tracker_backend::api::router::create_router;
 use portfolio_tracker_backend::appstate::AppState;
+use portfolio_tracker_backend::model::ids::{AssetId, HoldingId, UserId};
 use portfolio_tracker_backend::model::{Asset, Contract, Network, Symbol};
 use portfolio_tracker_backend::service::model::Token;
 use rust_decimal::Decimal;
@@ -8,7 +9,6 @@ use sqlx::PgPool;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::ImageExt;
 use testcontainers_modules::postgres::Postgres;
-use uuid::Uuid;
 
 pub trait IntoDecimal {
     fn d(self) -> Decimal;
@@ -50,7 +50,7 @@ impl DBFixture {
         name: &str,
         network: &str,
         contract: &str,
-    ) -> Uuid {
+    ) -> AssetId {
         sqlx::query_scalar!(
             "INSERT INTO assets (id, symbol, name, network, contract_address) VALUES (gen_random_uuid(), $1, $2, $3, $4) RETURNING id",
             symbol,
@@ -60,28 +60,31 @@ impl DBFixture {
         )
             .fetch_one(&self.pool)
             .await
+            .map(From::from)
             .unwrap()
     }
-    pub async fn with_test_user(&self) -> Uuid {
+    pub async fn with_test_user(&self) -> UserId {
         sqlx::query_scalar!(
             "INSERT INTO users (id, email, password_hash, created_at) VALUES (gen_random_uuid(), 'test@test.com', 'Test User', now()) RETURNING id")
             .fetch_one(&self.pool)
             .await
+            .map(From::from)
             .unwrap()
     }
-    pub async fn with_test_asset(&self, asset: &Asset) -> Uuid {
+    pub async fn with_test_asset(&self, asset: &Asset) -> AssetId {
         sqlx::query_scalar!(
-            "INSERT INTO assets (id, symbol, name, network, contract_address) VALUES ($1, $2, $3, $4, $5) RETURNING id", asset.id, asset.symbol.0.as_str(), asset.name.as_str(), asset.network.to_id(), asset.contract_address.0.as_str())
+            "INSERT INTO assets (id, symbol, name, network, contract_address) VALUES ($1, $2, $3, $4, $5) RETURNING id", asset.id.0, asset.symbol.0.as_str(), asset.name.as_str(), asset.network.to_id(), asset.contract_address.0.as_str())
             .fetch_one(&self.pool)
             .await
+            .map(From::from)
             .unwrap()
     }
 
-    pub async fn get_user_holdings(&self, user_id: Uuid) -> Vec<HoldingDTO> {
+    pub async fn get_user_holdings(&self, user_id: UserId) -> Vec<HoldingDTO> {
         sqlx::query_as!(
             HoldingDTO,
             "SELECT id, asset_id, amount, description FROM current_holdings WHERE user_id = $1",
-            user_id
+            user_id.0
         )
         .fetch_all(&self.pool)
         .await
@@ -90,8 +93,8 @@ impl DBFixture {
 }
 #[derive(Debug)]
 pub struct HoldingDTO {
-    pub id: Uuid,
-    pub asset_id: Uuid,
+    pub id: HoldingId,
+    pub asset_id: AssetId,
     pub amount: Decimal,
     pub description: Option<String>,
 }
@@ -145,7 +148,7 @@ pub struct AssetFixture;
 impl AssetFixture {
     pub fn jitosol_test_asset() -> Asset {
         Asset::new(
-            Uuid::new_v4(),
+            AssetId::new(),
             Symbol::new("JITOSOL"),
             "Jito Staked Sol".into(),
             Network::Solana,
@@ -154,7 +157,7 @@ impl AssetFixture {
     }
     pub fn weth_test_asset() -> Asset {
         Asset::new(
-            Uuid::new_v4(),
+            AssetId::new(),
             Symbol::new("WETH"),
             "Wrapped Ethereum".into(),
             Network::Ethereum,
@@ -163,7 +166,7 @@ impl AssetFixture {
     }
     pub fn usdc_test_asset() -> Asset {
         Asset::new(
-            Uuid::new_v4(),
+            AssetId::new(),
             Symbol::new("USDC"),
             "USDC".into(),
             Network::Base,
@@ -174,7 +177,7 @@ impl AssetFixture {
     // Next two for the CG response example
     pub fn trump_test_asset() -> Asset {
         Asset::new(
-            Uuid::new_v4(),
+            AssetId::new(),
             Symbol::new("TRUMP"),
             "OFFICIAL TRUMP".into(),
             Network::Solana,
@@ -183,7 +186,7 @@ impl AssetFixture {
     }
     pub fn soracat_test_asset() -> Asset {
         Asset::new(
-            Uuid::new_v4(),
+            AssetId::new(),
             Symbol::new("SORACAT"),
             "SORACAT".into(),
             Network::Solana,
