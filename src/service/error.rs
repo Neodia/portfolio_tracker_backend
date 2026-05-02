@@ -63,7 +63,7 @@ impl From<ClientError> for ServiceError {
             ClientError::Unexpected(err) => ServiceError::InternalServerError(err.to_string()),
 
             // Doesn't get bubbled up
-            err @ ClientError::MissingAssetPriceError(_) => ServiceError::InternalServerError(err.to_string())
+            err @ ClientError::MissingAssetRateError(_) => ServiceError::InternalServerError(err.to_string())
         }
     }
 }

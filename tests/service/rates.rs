@@ -24,7 +24,7 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
 
     let mock_server = MockServer::start().await;
 
-    let body = std::fs::read_to_string("tests/fixtures/get_prices_from_network_200.json")
+    let body = std::fs::read_to_string("tests/fixtures/get_rates_from_network_200.json")
         .expect("fixture file not found");
     Mock::given(method("GET"))
         .and(path(format!(
@@ -82,7 +82,7 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
 }
 
 #[tokio::test]
-async fn fetch_rates_handles_missing_price_gracefully() {
+async fn fetch_rates_handles_missing_rate_gracefully() {
     let mock_server = MockServer::start().await;
     let Asset {
         id: _,
@@ -92,7 +92,7 @@ async fn fetch_rates_handles_missing_price_gracefully() {
         contract_address,
     } = AssetFixture::jitosol_test_asset();
 
-    // CG returns null price
+    // CG returns null rate
     Mock::given(method("GET"))
         .and(path_regex("/onchain/networks/solana/tokens/multi/.*"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({

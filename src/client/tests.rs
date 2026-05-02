@@ -1,7 +1,7 @@
 use super::util::*;
 use crate::client::cg_model::{CGTokenAttribute, CGTokenData};
 use crate::client::mapper::map_cg_to_domain;
-use crate::client::model::BlockchainAssetPrice;
+use crate::client::model::BlockchainAssetRate;
 use crate::model::{Contract, Network, Symbol};
 use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
@@ -27,7 +27,7 @@ fn map_cg_to_domain_works() {
     let name = "Bitcoin".to_string();
     let contract = Contract("0x123".to_string());
     let network = Network::Bitcoin;
-    let price_usd = Decimal::from_f64(75_000f64).unwrap();
+    let rate_usd = Decimal::from_f64(75_000f64).unwrap();
     assert_eq!(
         map_cg_to_domain(
             CGTokenData {
@@ -35,13 +35,13 @@ fn map_cg_to_domain_works() {
                     symbol: symbol.clone(),
                     name: name.clone(),
                     address: contract.clone(),
-                    price_usd: Some(price_usd.clone()),
+                    price_usd: Some(rate_usd.clone()),
                 }
             },
             network
         ),
-        Some(BlockchainAssetPrice::new(
-            symbol, name, network, contract, price_usd
+        Some(BlockchainAssetRate::new(
+            symbol, name, network, contract, rate_usd
         ))
     )
 }

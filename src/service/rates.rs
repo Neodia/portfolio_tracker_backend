@@ -1,7 +1,7 @@
 use crate::client::error::ClientError;
-use crate::client::model::{BlockchainAssetPrice, GetPricesFromNetworkResponse};
+use crate::client::model::{BlockchainAssetRate, GetRatesFromNetworkResponse};
 use crate::client::CGClient;
-use crate::model::{Asset, AssetPrice, Contract, Network};
+use crate::model::{Asset, AssetRate, Contract, Network};
 use crate::repository::{AssetRepository, OutboxRepository, RateRepository, Repositories};
 use crate::service::error::ServiceError;
 use chrono::Utc;
@@ -28,27 +28,27 @@ impl<C: CGClient> RatesService<C> {
         let assets_per_network: HashMap<Network, Vec<&Asset>> =
             assets.iter().into_group_map_by(|asset| asset.network);
 
-        let prices_per_asset_f = assets_per_network
+        let rates_per_asset_f = assets_per_network
             .into_iter()
-            .map(|(network, assets)| Self::fetch_prices(&self.client, network, assets));
+            .map(|(network, assets)| Self::fetch_rates(&self.client, network, assets));
 
-        let all_token_prices: HashMap<_, _> = try_join_all(prices_per_asset_f)
+        let all_token_rates: HashMap<_, _> = try_join_all(rates_per_asset_f)
             .await?
             .into_iter()
             .flatten()
             .collect();
 
-        let (asset_rates, price_mapping_errors): (Vec<AssetPrice>, Vec<Asset>) = assets
+        let (asset_rates, rate_mapping_errors): (Vec<AssetRate>, Vec<Asset>) = assets
             .into_iter()
-            .map(|asset| Self::get_price_for_asset(asset, &all_token_prices))
+            .map(|asset| Self::get_rate_for_asset(asset, &all_token_rates))
             .partition_map(|result| match result {
                 Ok(rate) => itertools::Either::Left(rate),
                 Err(e) => itertools::Either::Right(e),
             });
 
         // Logs assets for which we didn't find rates
-        for asset_without_price in price_mapping_errors {
-            tracing::warn!(asset=?asset_without_price, "Error finding rate for asset");
+        for asset_without_rate in rate_mapping_errors {
+            tracing::warn!(asset=?asset_without_rate, "Error finding rate for asset");
         }
 
         let now = Utc::now();
@@ -67,34 +67,34 @@ impl<C: CGClient> RatesService<C> {
         Ok(())
     }
 
-    async fn fetch_prices(
+    async fn fetch_rates(
         client: &C,
         network: Network,
         assets: Vec<&Asset>,
-    ) -> Result<HashMap<(Network, Contract), BlockchainAssetPrice>, ClientError> {
-        let map_response_to_hashmap = |prices: GetPricesFromNetworkResponse| -> HashMap<(Network, Contract), BlockchainAssetPrice> {
-            prices
-                .prices
+    ) -> Result<HashMap<(Network, Contract), BlockchainAssetRate>, ClientError> {
+        let map_response_to_hashmap = |rates: GetRatesFromNetworkResponse| -> HashMap<(Network, Contract), BlockchainAssetRate> {
+            rates
+                .rates
                 .into_iter()
-                .map(|price| ((network, price.contract.clone()), price))
+                .map(|rate| ((network, rate.contract.clone()), rate))
                 .collect::<HashMap<_, _>>()
         };
 
         let contracts: Vec<Contract> = assets.iter().map(|a| a.contract_address.clone()).collect();
         client
-            .get_prices_from_network(network, contracts)
+            .get_rates_from_network(network, contracts)
             .await
             .map(map_response_to_hashmap)
     }
 
-    fn get_price_for_asset(
+    fn get_rate_for_asset(
         asset: Asset,
-        prices: &HashMap<(Network, Contract), BlockchainAssetPrice>,
-    ) -> Result<AssetPrice, Asset> {
+        rates: &HashMap<(Network, Contract), BlockchainAssetRate>,
+    ) -> Result<AssetRate, Asset> {
         let key = (asset.network, asset.contract_address.clone());
-        let price = prices.get(&key);
-        let price = price.ok_or(asset.clone())?;
+        let rate = rates.get(&key);
+        let rate = rate.ok_or(asset.clone())?;
 
-        Ok(AssetPrice::new(asset, price.price))
+        Ok(AssetRate::new(asset, rate.rate))
     }
 }

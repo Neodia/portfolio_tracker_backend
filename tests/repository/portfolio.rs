@@ -1,7 +1,7 @@
 use crate::common::{AssetFixture, DBFixture, IntoDecimal};
 use chrono::Utc;
 use itertools::Itertools;
-use portfolio_tracker_backend::model::{AssetAllocation, AssetHoldings, AssetPrice, Holding};
+use portfolio_tracker_backend::model::{AssetAllocation, AssetHoldings, AssetRate, Holding};
 use portfolio_tracker_backend::repository::live::{LivePortfolioRepository, LiveRateRepository};
 use portfolio_tracker_backend::repository::traits::PortfolioRepository;
 use portfolio_tracker_backend::repository::RateRepository;
@@ -193,8 +193,8 @@ async fn get_holdings_works() {
     let now = Utc::now();
 
     // Populate Rates
-    let jitosol_rate = AssetPrice::new(jitosol, jitosol_rate_usd);
-    let weth_rate = AssetPrice::new(weth, weth_rate_usd);
+    let jitosol_rate = AssetRate::new(jitosol, jitosol_rate_usd);
+    let weth_rate = AssetRate::new(weth, weth_rate_usd);
     let asset_rates = vec![jitosol_rate.clone(), weth_rate.clone()];
     let mut tx = db.pool.begin().await.unwrap();
     rates_repo
@@ -230,7 +230,7 @@ async fn get_holdings_works() {
         .await
         .unwrap()
         .into_iter()
-        .sorted_by_key(|holdings| holdings.asset_price.asset.symbol.clone()) // ensures JitoSOL comes before WETH
+        .sorted_by_key(|holdings| holdings.asset_rate.asset.symbol.clone()) // ensures JitoSOL comes before WETH
         .collect();
     assert_eq!(
         holdings,

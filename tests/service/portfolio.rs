@@ -1,7 +1,7 @@
 use crate::common::{AssetFixture, IntoDecimal, TestApp};
 use chrono::Utc;
 use portfolio_tracker_backend::model::{
-    AssetAllocation, AssetHoldingsWithDrift, AssetPrice,
+    AssetAllocation, AssetHoldingsWithDrift, AssetRate,
     HoldingWithAllocation, PortfolioHoldings,
 };
 use portfolio_tracker_backend::repository::live::LiveRateRepository;
@@ -76,9 +76,9 @@ async fn get_portfolio_works() {
     let now = Utc::now();
 
     // Populate Rates
-    let usdc_rate = AssetPrice::new(usdc.clone(), usdc_rate_usd);
-    let jitosol_rate = AssetPrice::new(jitosol.clone(), jitosol_rate_usd);
-    let weth_rate = AssetPrice::new(weth.clone(), weth_rate_usd);
+    let usdc_rate = AssetRate::new(usdc.clone(), usdc_rate_usd);
+    let jitosol_rate = AssetRate::new(jitosol.clone(), jitosol_rate_usd);
+    let weth_rate = AssetRate::new(weth.clone(), weth_rate_usd);
     let asset_rates = vec![jitosol_rate.clone(), weth_rate.clone(), usdc_rate.clone()];
     let mut tx = db.pool.begin().await.unwrap();
     rates_repo

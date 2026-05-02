@@ -1,6 +1,6 @@
 use super::client::CGClient;
-use super::model::GetPricesFromNetworkResponse;
-use crate::client::cg_model::CGGetPricesFromNetworkResponse;
+use super::model::GetRatesFromNetworkResponse;
+use crate::client::cg_model::CGGetRatesFromNetworkResponse;
 use crate::client::error::ClientError;
 use crate::client::util::{WithEnrichment, join_as_csv};
 use crate::model::Contract;
@@ -53,12 +53,12 @@ impl LiveCGClient {
 }
 
 impl CGClient for LiveCGClient {
-    async fn get_prices_from_network(
+    async fn get_rates_from_network(
         &self,
         network: Network,
         contracts: Vec<Contract>,
-    ) -> Result<GetPricesFromNetworkResponse, ClientError> {
-        self.get::<_, CGGetPricesFromNetworkResponse, _>(
+    ) -> Result<GetRatesFromNetworkResponse, ClientError> {
+        self.get::<_, CGGetRatesFromNetworkResponse, _>(
             format!(
                 "{}/onchain/networks/{}/tokens/multi/{}",
                 self.base_url,

@@ -4,43 +4,43 @@ use serde::Deserialize;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone)]
-pub struct BlockchainAssetPrice {
+pub struct BlockchainAssetRate {
     pub symbol: Symbol,
     pub name: String,
     pub network: Network,
     pub contract: Contract,
-    pub price: Decimal,
+    pub rate: Decimal,
 }
 
-impl BlockchainAssetPrice {
+impl BlockchainAssetRate {
     pub fn new(
         symbol: Symbol,
         name: String,
         network: Network,
         contract: Contract,
-        price: Decimal,
+        rate: Decimal,
     ) -> Self {
         Self {
             symbol,
             name,
             network,
             contract,
-            price,
+            rate,
         }
     }
 }
 #[derive(Deserialize, Debug)]
-pub struct GetPricesFromNetworkResponse {
-    pub prices: Vec<BlockchainAssetPrice>,
+pub struct GetRatesFromNetworkResponse {
+    pub rates: Vec<BlockchainAssetRate>,
 }
 
-impl Display for GetPricesFromNetworkResponse {
+impl Display for GetRatesFromNetworkResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        for asset_price in &self.prices {
+        for asset_rate in &self.rates {
             writeln!(
                 f,
                 "{} {}({}): {}",
-                asset_price.symbol, asset_price.network, asset_price.contract, asset_price.price
+                asset_rate.symbol, asset_rate.network, asset_rate.contract, asset_rate.rate
             )?;
         }
         Ok(())

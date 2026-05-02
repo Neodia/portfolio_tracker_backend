@@ -1,5 +1,5 @@
 use crate::model::ids::{AssetId, HoldingId, UserId};
-use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetPrice, Contract, Network, Symbol, User};
+use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetRate, Contract, Network, Symbol, User};
 use crate::repository::error::DBError;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
@@ -30,7 +30,7 @@ pub trait RateRepository: Clone {
     fn insert_rates(
         &self,
         tx: &mut PgTransaction,
-        rates: Vec<AssetPrice>,
+        rates: Vec<AssetRate>,
         now: DateTime<Utc>,
     ) -> impl Future<Output = Result<(), DBError>>;
 }

@@ -1,6 +1,6 @@
 use rust_decimal::Decimal;
 use serde::Serialize;
-use crate::model::AssetPrice;
+use crate::model::AssetRate;
 use crate::model::ids::HoldingId;
 
 #[derive(Serialize, PartialEq, Debug)]
@@ -30,7 +30,7 @@ impl HoldingWithAllocation {
 }
 #[derive(Serialize, PartialEq, Debug)]
 pub struct AssetHoldingsWithDrift {
-    pub asset_price: AssetPrice,
+    pub asset_rate: AssetRate,
     pub total_value_usd: Decimal,
     pub holdings: Vec<HoldingWithAllocation>,
     pub total_allocation_pct: Decimal,
@@ -39,7 +39,7 @@ pub struct AssetHoldingsWithDrift {
 }
 impl AssetHoldingsWithDrift {
     pub fn new(
-        asset_price: AssetPrice,
+        asset_rate: AssetRate,
         total_value_usd: Decimal,
         holdings: Vec<HoldingWithAllocation>,
         total_allocation_pct: Decimal,
@@ -47,7 +47,7 @@ impl AssetHoldingsWithDrift {
         drift_pct: Decimal,
     ) -> Self {
         Self {
-            asset_price,
+            asset_rate,
             total_value_usd,
             holdings,
             total_allocation_pct,
