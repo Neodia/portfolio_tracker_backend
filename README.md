@@ -14,7 +14,7 @@ TODO: Make a proper file out of this
     1. this shouldn't happen
     2. write access would be given only to SREs in specific cases which would prevent accidental updates with wrong
        values
-- `PgPool::clone` uses `Arc` internally so it's safe to clone
+- `PgPool::clone` uses `Arc` internally so it's safe to clone, same for the `CGClient` with `reqwest::Client`
 - Rate limiting isn't in this app as I would put in at deployment level behind a WAF (With a K8S service for example)
 - As a purely personal project, there's no SSL as that's an infra issue I don't have as I use my app through SSH. In
   prod, I would've a Let's Encrypt + Certbot setup

@@ -1,24 +1,24 @@
+use crate::client::live::LiveCGClient;
 use crate::model::ids::{AssetId, HoldingId, UserId};
-use crate::model::{
-    AssetAllocation, AssetHoldings, AssetHoldingsWithDrift, HoldingWithAllocation,
-    PortfolioHoldings, PortfolioResponse,
-};
+use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetHoldingsWithDrift, HoldingWithAllocation, PortfolioHoldings, PortfolioResponse};
 use crate::repository::traits::PortfolioRepository;
 use crate::repository::Repositories;
+use crate::service::error::ServiceError;
+use crate::service::rates::RatesService;
 use chrono::Utc;
 use itertools::Itertools;
 use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use std::collections::HashMap;
-use crate::service::error::ServiceError;
 
 #[derive(Clone)]
 pub struct PortfolioService {
     repositories: Repositories,
+    rates_service: RatesService<LiveCGClient>,
 }
 impl PortfolioService {
-    pub fn new(repositories: Repositories) -> Self {
-        Self { repositories }
+    pub fn new(repositories: Repositories, rates_service: RatesService<LiveCGClient>) -> Self {
+        Self { repositories, rates_service }
     }
     pub async fn upsert_expected_asset_allocation(
         &self,
@@ -117,6 +117,15 @@ impl PortfolioService {
             user_holdings,
             vec![], // TODO: Get this from DB when historical portfolio job is done
         ))
+    }
+
+    pub async fn refresh_portfolio(&self, user_id: UserId) -> Result<PortfolioResponse, ServiceError> {
+        let holdings = self.repositories.portfolio.get_holdings(user_id).await?;
+        let holdings_assets: Vec<Asset> = holdings.into_iter().map(|holding| holding.asset_rate.asset).collect();
+        
+        self.rates_service.fetch_asset_rates_and_persist(holdings_assets).await?;
+        
+        self.get_portfolio(user_id).await
     }
 
     fn compute_drift_for_holding(

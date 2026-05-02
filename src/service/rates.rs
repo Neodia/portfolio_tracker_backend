@@ -22,9 +22,12 @@ impl<C: CGClient> RatesService<C> {
             client,
         }
     }
-    pub async fn fetch_rates_and_persist(&self) -> Result<(), ServiceError> {
+    pub async fn fetch_all_rates_and_persist(&self) -> Result<(), ServiceError> {
         let assets = self.repositories.asset.get_all_assets().await?;
-
+        self.fetch_asset_rates_and_persist(assets).await?;
+        Ok(())
+    }
+    pub async fn fetch_asset_rates_and_persist(&self, assets: Vec<Asset>) -> Result<(), ServiceError> {
         let assets_per_network: HashMap<Network, Vec<&Asset>> =
             assets.iter().into_group_map_by(|asset| asset.network);
 

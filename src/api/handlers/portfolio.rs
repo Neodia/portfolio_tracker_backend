@@ -87,3 +87,15 @@ pub async fn get_portfolio(
         .await?;
     Ok(Json(portfolio_response))
 }
+
+pub async fn refresh_portfolio(
+    State(state): State<AppState>,
+    user: AuthenticatedUser,
+) -> Result<Json<PortfolioResponse>, ApiError> {
+    let portfolio_response = state
+        .services
+        .portfolio_service
+        .get_portfolio(user.id)
+        .await?;
+    Ok(Json(portfolio_response))
+}

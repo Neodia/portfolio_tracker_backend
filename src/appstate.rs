@@ -35,14 +35,18 @@ impl AppState {
     }
 
     fn from(repositories: Repositories, cg_client: LiveCGClient, jwt_secret: String) -> Self {
+        let rates_service = RatesService::new(repositories.clone(), cg_client);
         Self {
             jwt_secret: jwt_secret.clone(),
             repositories: repositories.clone(),
             services: Services {
                 asset_service: AssetService::new(repositories.asset.clone()),
                 user_service: UserService::new(repositories.user.clone(), jwt_secret),
-                rates_service: RatesService::new(repositories.clone(), cg_client),
-                portfolio_service: PortfolioService::new(repositories.clone()),
+                rates_service: rates_service.clone(),
+                portfolio_service: PortfolioService::new(
+                    repositories.clone(),
+                    rates_service.clone(),
+                ),
             },
         }
     }
