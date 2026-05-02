@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use uuid::Uuid;
 
-#[derive(Debug, Eq, Hash, Deserialize, Clone, Serialize)]
+#[derive(Debug, PartialEq, Eq, Hash, Deserialize, Clone, Serialize)]
 pub struct Asset {
     pub id: Uuid,
     pub symbol: Symbol,
@@ -28,10 +28,8 @@ impl Asset {
             contract_address,
         }
     }
-}
 
-impl PartialEq for Asset {
-    fn eq(&self, other: &Self) -> bool {
+    pub fn is_same_asset(&self, other: &Self) -> bool {
         // id intentionally excluded
         self.symbol == other.symbol
             && self.network == other.network
