@@ -1,4 +1,4 @@
-use crate::model::error::AppError;
+use crate::api::error::ApiError;
 use axum::Json;
 use axum::extract::{FromRequest, Request};
 use serde::de::DeserializeOwned;
@@ -17,15 +17,15 @@ where
     T: DeserializeOwned + Validate,
     S: Send + Sync,
 {
-    type Rejection = AppError;
+    type Rejection = ApiError;
 
     async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
         let Json(value) = Json::<T>::from_request(req, state)
             .await
-            .map_err(|e| AppError::BadRequestError(e.to_string()))?;
+            .map_err(|e| ApiError::BadRequest(e.to_string()))?;
         value
             .validate()
-            .map_err(|e| AppError::BadRequestError(e.to_string()))?;
+            .map_err(|e| ApiError::BadRequest(e.to_string()))?;
         Ok(ValidatedJson(value))
     }
 }

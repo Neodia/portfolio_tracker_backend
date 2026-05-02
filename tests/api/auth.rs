@@ -184,7 +184,7 @@ async fn login_with_valid_credentials_returns_token() {
 }
 
 #[tokio::test]
-async fn login_with_wrong_password_returns_not_found() {
+async fn login_with_wrong_password_returns_unauthorized() {
     let TestApp {
         appstate: _,
         router: app,
@@ -209,5 +209,5 @@ async fn login_with_wrong_password_returns_not_found() {
         .await
         .unwrap();
 
-    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
 }

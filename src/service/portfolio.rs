@@ -1,4 +1,3 @@
-use crate::model::error::AppError;
 use crate::model::ids::{AssetId, HoldingId, UserId};
 use crate::model::{
     AssetAllocation, AssetHoldings, AssetHoldingsWithDrift, HoldingWithAllocation,
@@ -11,6 +10,7 @@ use itertools::Itertools;
 use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use std::collections::HashMap;
+use crate::service::error::ServiceError;
 
 #[derive(Clone)]
 pub struct PortfolioService {
@@ -25,7 +25,7 @@ impl PortfolioService {
         user_id: UserId,
         asset_id: AssetId,
         percentage: Decimal,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), ServiceError> {
         let now = Utc::now();
         self.repositories
             .portfolio
@@ -37,7 +37,7 @@ impl PortfolioService {
         &self,
         user_id: UserId,
         asset_id: AssetId,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), ServiceError> {
         self.repositories
             .portfolio
             .delete_expected_asset_allocation(user_id, asset_id)
@@ -51,7 +51,7 @@ impl PortfolioService {
         asset_id: AssetId,
         amount: Decimal,
         description: Option<String>,
-    ) -> Result<HoldingId, AppError> {
+    ) -> Result<HoldingId, ServiceError> {
         let now = Utc::now();
         let id = self.repositories
             .portfolio
@@ -65,7 +65,7 @@ impl PortfolioService {
         holding_id: HoldingId,
         amount: Decimal,
         description: Option<String>,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), ServiceError> {
         let now = Utc::now();
         self.repositories
             .portfolio
@@ -73,7 +73,7 @@ impl PortfolioService {
             .await?;
         Ok(())
     }
-    pub async fn delete_holding(&self, user_id: UserId, holding_id: HoldingId) -> Result<(), AppError> {
+    pub async fn delete_holding(&self, user_id: UserId, holding_id: HoldingId) -> Result<(), ServiceError> {
         self.repositories
             .portfolio
             .delete_holding(holding_id, user_id)
@@ -81,7 +81,7 @@ impl PortfolioService {
         Ok(())
     }
 
-    pub async fn get_portfolio(&self, user_id: UserId) -> Result<PortfolioResponse, AppError> {
+    pub async fn get_portfolio(&self, user_id: UserId) -> Result<PortfolioResponse, ServiceError> {
         let (expected_allocations, holdings) = tokio::try_join!(
             self.repositories
                 .portfolio

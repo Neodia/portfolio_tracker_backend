@@ -1,7 +1,6 @@
-use crate::client::CGClient;
 use crate::client::error::ClientError;
 use crate::client::model::{BlockchainAssetPrice, GetPricesFromNetworkResponse};
-use crate::model::error::AppError;
+use crate::client::CGClient;
 use crate::model::{Asset, AssetPrice, Contract, Network};
 use crate::repository::{AssetRepository, OutboxRepository, RateRepository, Repositories};
 use crate::service::error::ServiceError;
@@ -23,7 +22,7 @@ impl<C: CGClient> RatesService<C> {
             client,
         }
     }
-    pub async fn fetch_rates_and_persist(&self) -> Result<(), AppError> {
+    pub async fn fetch_rates_and_persist(&self) -> Result<(), ServiceError> {
         let assets = self.repositories.asset.get_all_assets().await?;
 
         let assets_per_network: HashMap<Network, Vec<&Asset>> =
@@ -39,7 +38,7 @@ impl<C: CGClient> RatesService<C> {
             .flatten()
             .collect();
 
-        let (asset_rates, price_mapping_errors): (Vec<AssetPrice>, Vec<ServiceError>) = assets
+        let (asset_rates, price_mapping_errors): (Vec<AssetPrice>, Vec<Asset>) = assets
             .into_iter()
             .map(|asset| Self::get_price_for_asset(asset, &all_token_prices))
             .partition_map(|result| match result {
@@ -47,9 +46,9 @@ impl<C: CGClient> RatesService<C> {
                 Err(e) => itertools::Either::Right(e),
             });
 
-        // Logs business errors. Other errors get bubbled up
-        for error in price_mapping_errors {
-            tracing::warn!(warn=?error, "Error finding price for asset");
+        // Logs assets for which we didn't find rates
+        for asset_without_price in price_mapping_errors {
+            tracing::warn!(asset=?asset_without_price, "Error finding rate for asset");
         }
 
         let now = Utc::now();
@@ -91,10 +90,10 @@ impl<C: CGClient> RatesService<C> {
     fn get_price_for_asset(
         asset: Asset,
         prices: &HashMap<(Network, Contract), BlockchainAssetPrice>,
-    ) -> Result<AssetPrice, ServiceError> {
+    ) -> Result<AssetPrice, Asset> {
         let key = (asset.network, asset.contract_address.clone());
         let price = prices.get(&key);
-        let price = price.ok_or(ServiceError::MissingAssetPriceError(asset.clone()))?;
+        let price = price.ok_or(asset.clone())?;
 
         Ok(AssetPrice::new(asset, price.price))
     }

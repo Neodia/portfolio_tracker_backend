@@ -1,14 +1,14 @@
-use crate::api::ValidatedJson;
+use crate::api::error::ApiError;
 use crate::api::model::{LoginRequest, RegisterRequest, TokenResponse};
+use crate::api::ValidatedJson;
 use crate::appstate::AppState;
-use crate::model::error::AppError;
-use axum::Json;
 use axum::extract::State;
+use axum::Json;
 
 pub async fn register(
     State(state): State<AppState>,
     ValidatedJson(req): ValidatedJson<RegisterRequest>,
-) -> Result<Json<TokenResponse>, AppError> {
+) -> Result<Json<TokenResponse>, ApiError> {
     let token = state
         .services
         .user_service
@@ -21,7 +21,7 @@ pub async fn register(
 pub async fn login(
     State(state): State<AppState>,
     ValidatedJson(req): ValidatedJson<LoginRequest>,
-) -> Result<Json<TokenResponse>, AppError> {
+) -> Result<Json<TokenResponse>, ApiError> {
     let user = state
         .services
         .user_service

@@ -1,6 +1,6 @@
-use crate::model::error::AppError;
 use crate::model::{Asset, Contract, Network, Symbol};
 use crate::repository::AssetRepository;
+use crate::service::error::ServiceError;
 
 #[derive(Clone)]
 pub struct AssetService<R: AssetRepository> {
@@ -11,7 +11,7 @@ impl<R: AssetRepository> AssetService<R> {
     pub fn new(repository: R) -> Self {
         Self { repository }
     }
-    pub async fn get_all_assets(&self) -> Result<Vec<Asset>, AppError> {
+    pub async fn get_all_assets(&self) -> Result<Vec<Asset>, ServiceError> {
         Ok(self.repository.get_all_assets().await?)
     }
     pub async fn insert_asset(
@@ -20,7 +20,7 @@ impl<R: AssetRepository> AssetService<R> {
         name: String,
         network: Network,
         contract: Contract,
-    ) -> Result<(), AppError> {
+    ) -> Result<(), ServiceError> {
         self.repository
             .insert_asset(symbol, name, network, contract)
             .await?;

@@ -7,7 +7,7 @@ use crate::service::user::UserService;
 
 pub mod asset;
 
-mod error;
+pub mod error;
 pub mod model;
 pub mod portfolio;
 pub mod rates;

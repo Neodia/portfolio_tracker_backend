@@ -1,8 +1,8 @@
 use crate::api::auth::AuthenticatedUser;
+use crate::api::error::ApiError;
 use crate::api::model::{AddExpectedAllocationRequest, AddHoldingRequest, UpdateHoldingRequest};
 use crate::api::ValidatedJson;
 use crate::appstate::AppState;
-use crate::model::error::AppError;
 use crate::model::ids::{AssetId, HoldingId};
 use crate::model::PortfolioResponse;
 use axum::extract::{Path, State};
@@ -13,7 +13,7 @@ pub async fn upsert_expected_asset_allocation(
     user: AuthenticatedUser,
     Path(asset_id): Path<AssetId>,
     ValidatedJson(req): ValidatedJson<AddExpectedAllocationRequest>,
-) -> Result<Json<()>, AppError> {
+) -> Result<Json<()>, ApiError> {
     let response = state
         .services
         .portfolio_service
@@ -25,7 +25,7 @@ pub async fn delete_expected_asset_allocation(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     Path(asset_id): Path<AssetId>,
-) -> Result<Json<()>, AppError> {
+) -> Result<Json<()>, ApiError> {
     let response = state
         .services
         .portfolio_service
@@ -37,7 +37,7 @@ pub async fn insert_holding(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     ValidatedJson(req): ValidatedJson<AddHoldingRequest>,
-) -> Result<Json<()>, AppError> {
+) -> Result<Json<()>, ApiError> {
     state
         .services
         .portfolio_service
@@ -50,7 +50,7 @@ pub async fn update_holding(
     user: AuthenticatedUser,
     Path(holding_id): Path<HoldingId>,
     ValidatedJson(req): ValidatedJson<UpdateHoldingRequest>,
-) -> Result<Json<()>, AppError> {
+) -> Result<Json<()>, ApiError> {
     let response = state
         .services
         .portfolio_service
@@ -67,7 +67,7 @@ pub async fn delete_holding(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     Path(holding_id): Path<HoldingId>,
-) -> Result<Json<()>, AppError> {
+) -> Result<Json<()>, ApiError> {
     let response = state
         .services
         .portfolio_service
@@ -79,7 +79,7 @@ pub async fn delete_holding(
 pub async fn get_portfolio(
     State(state): State<AppState>,
     user: AuthenticatedUser,
-) -> Result<Json<PortfolioResponse>, AppError> {
+) -> Result<Json<PortfolioResponse>, ApiError> {
     let portfolio_response = state
         .services
         .portfolio_service
