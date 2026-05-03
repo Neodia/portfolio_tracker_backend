@@ -6,9 +6,10 @@ use portfolio_tracker_backend::model::{Asset, Contract, Network, Symbol};
 use portfolio_tracker_backend::service::model::Token;
 use rust_decimal::Decimal;
 use sqlx::PgPool;
-use testcontainers::runners::AsyncRunner;
 use testcontainers::ImageExt;
+use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::postgres::Postgres;
+use uuid::Uuid;
 
 pub trait IntoDecimal {
     fn d(self) -> Decimal;
@@ -64,8 +65,10 @@ impl DBFixture {
             .unwrap()
     }
     pub async fn with_test_user(&self) -> UserId {
+        let uuid = Uuid::new_v4();
+        let email = format!("{}@test.com", uuid);
         sqlx::query_scalar!(
-            "INSERT INTO users (id, email, password_hash, created_at) VALUES (gen_random_uuid(), 'test@test.com', 'Test User', now()) RETURNING id")
+            "INSERT INTO users (id, email, password_hash, created_at) VALUES ($1, $2, 'Test User', now()) RETURNING id", uuid, email)
             .fetch_one(&self.pool)
             .await
             .map(From::from)

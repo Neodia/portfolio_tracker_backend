@@ -7,3 +7,8 @@ pub struct PortfolioValueAt {
     pub value_usd: Decimal,
     pub at: DateTime<Utc>,
 }
+impl PortfolioValueAt {
+    pub fn new(value_usd: Decimal, at: DateTime<Utc>) -> Self {
+        Self { value_usd, at }
+    }
+}

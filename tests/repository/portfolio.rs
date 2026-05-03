@@ -1,11 +1,14 @@
 use crate::common::{AssetFixture, DBFixture, IntoDecimal};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use itertools::Itertools;
-use portfolio_tracker_backend::model::{AssetAllocation, AssetHoldings, AssetRate, Holding};
+use portfolio_tracker_backend::model::{
+    AssetAllocation, AssetHoldings, AssetRate, Holding, PortfolioValueAt, UserHolding,
+};
+use portfolio_tracker_backend::repository::RateRepository;
 use portfolio_tracker_backend::repository::live::{LivePortfolioRepository, LiveRateRepository};
 use portfolio_tracker_backend::repository::traits::PortfolioRepository;
-use portfolio_tracker_backend::repository::RateRepository;
 use rust_decimal::Decimal;
+use std::collections::HashSet;
 
 #[tokio::test]
 async fn upsert_inserts_allocation() {
@@ -256,5 +259,104 @@ async fn get_holdings_works() {
                 ))
             )
         )
+    );
+}
+
+#[tokio::test]
+async fn get_all_users_holdings_works() {
+    let db = DBFixture::new().await;
+
+    let user_1 = db.with_test_user().await;
+    let user_2 = db.with_test_user().await;
+
+    let jitosol = AssetFixture::jitosol_test_asset();
+    let jitosol_amount = "2".d();
+    db.with_test_asset(&jitosol).await;
+
+    let now = Utc::now();
+
+    let portfolio_repo = LivePortfolioRepository::new_from_pool(db.pool.clone());
+    let user_1_holding = portfolio_repo
+        .insert_holding(user_1, jitosol.id, jitosol_amount, None, now)
+        .await
+        .unwrap();
+    let user_2_holding = portfolio_repo
+        .insert_holding(user_2, jitosol.id, jitosol_amount, None, now)
+        .await
+        .unwrap();
+
+    // Hashset to not care about ordering
+    let all_users_holdings: HashSet<_> = portfolio_repo
+        .get_all_users_holdings()
+        .await
+        .unwrap()
+        .into_iter()
+        .collect();
+
+    assert_eq!(
+        all_users_holdings,
+        HashSet::from_iter(vec![
+            (
+                user_1,
+                vec![UserHolding::new(
+                    user_1_holding,
+                    user_1,
+                    jitosol.id,
+                    jitosol_amount,
+                    None
+                )],
+            ),
+            (
+                user_2,
+                vec![UserHolding::new(
+                    user_2_holding,
+                    user_2,
+                    jitosol.id,
+                    jitosol_amount,
+                    None
+                )],
+            ),
+        ])
+    );
+}
+
+#[tokio::test]
+async fn insert_portfolio_snapshots_works() {
+    let db = DBFixture::new().await;
+    let user_id = db.with_test_user().await;
+
+    let first_dt = DateTime::parse_from_rfc3339("2024-01-01T00:00:00Z")
+        .unwrap()
+        .with_timezone(&Utc);
+    let first_value_usd = "15_000".d();
+    let second_dt = DateTime::parse_from_rfc3339("2024-01-02T00:00:00Z")
+        .unwrap()
+        .with_timezone(&Utc);
+    let second_value_usd = "15_000".d();
+
+    let portfolio_repo = LivePortfolioRepository::new_from_pool(db.pool.clone());
+    let mut tx = db.pool.begin().await.unwrap();
+    portfolio_repo
+        .insert_portfolio_snapshots(&mut tx, vec![(&user_id, first_value_usd)], first_dt)
+        .await
+        .unwrap();
+    portfolio_repo
+        .insert_portfolio_snapshots(&mut tx, vec![(&user_id, second_value_usd)], second_dt)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+
+    let historical_portfolio_values = portfolio_repo
+        .get_historical_portfolio_values(user_id)
+        .await
+        .unwrap();
+
+    // Ordered DESC on date
+    assert_eq!(
+        historical_portfolio_values,
+        vec![
+            PortfolioValueAt::new(second_value_usd, second_dt),
+            PortfolioValueAt::new(first_value_usd, first_dt),
+        ]
     );
 }

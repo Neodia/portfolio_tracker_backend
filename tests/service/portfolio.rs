@@ -1,10 +1,12 @@
 use crate::common::{AssetFixture, IntoDecimal, TestApp};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use portfolio_tracker_backend::model::{
     AssetAllocation, AssetHoldingsWithDrift, AssetRate, HoldingWithAllocation, PortfolioHoldings,
+    PortfolioValueAt,
 };
-use portfolio_tracker_backend::repository::RateRepository;
 use portfolio_tracker_backend::repository::live::LiveRateRepository;
+use portfolio_tracker_backend::repository::traits::PortfolioRepository;
+use portfolio_tracker_backend::repository::{OutboxRepository, RateRepository};
 
 /*
    USDC Rate:    1$
@@ -124,6 +126,27 @@ async fn get_portfolio_works() {
         .await
         .unwrap();
 
+    // Populate portfolio snapshots
+    let first_dt = DateTime::parse_from_rfc3339("2024-01-01T00:00:00Z")
+        .unwrap()
+        .with_timezone(&Utc);
+    let first_value_usd = "15_000".d();
+    let second_dt = DateTime::parse_from_rfc3339("2024-01-02T00:00:00Z")
+        .unwrap()
+        .with_timezone(&Utc);
+    let second_value_usd = "15_000".d();
+    let portfolio_repo = appstate.repositories.portfolio;
+    let mut tx = db.pool.begin().await.unwrap();
+    portfolio_repo
+        .insert_portfolio_snapshots(&mut tx, vec![(&user_id, first_value_usd)], first_dt)
+        .await
+        .unwrap();
+    portfolio_repo
+        .insert_portfolio_snapshots(&mut tx, vec![(&user_id, second_value_usd)], second_dt)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+
     let portfolio = appstate
         .services
         .portfolio_service
@@ -186,5 +209,154 @@ async fn get_portfolio_works() {
 
     assert_eq!(portfolio.expected_asset_allocations, expected_allocations);
     assert_eq!(portfolio.holdings, expected_portfolio_holdings);
-    assert_eq!(portfolio.historical_portfolio_value, vec![]); // TODO: Change this when doing the historical portfolio value job
+    assert_eq!(
+        portfolio.historical_portfolio_value,
+        vec![
+            // Ordered DESC on date
+            PortfolioValueAt::new(second_value_usd, second_dt),
+            PortfolioValueAt::new(first_value_usd, first_dt),
+        ]
+    );
+}
+
+/*
+   2 assets: WETH & JitoSOL
+
+   2 dates:
+       first_dt: 2024-01-01T00:00:00Z
+       second_dt: 2024-01-02T00:00:00Z
+
+   Rates:
+       first_dt:
+           WETH:    1'500$
+           JitoSOL: 100$
+       second_dt:
+           WETH:    2'000$
+           JitoSOL: 80$
+
+    User Holdings:
+       WETH:    1
+       JitoSOL: 2
+
+    Expected portfolio values:
+       first_dt:
+           WETH:       1   *   1'500   =   1'500
+           JitoSOL:    2   *   100     =   200
+           TOTAL: 1'500 + 200 = 1'700
+       second_dt:
+           WETH:       1   *   2'000   =   2'000
+           JitoSOL:    2   *   80      =   160
+           TOTAL: 2'000 + 160 = 2'160
+*/
+#[tokio::test]
+async fn portfolio_snapshots_computation_works() {
+    let TestApp {
+        appstate,
+        router: _,
+        db,
+    } = TestApp::new().await;
+    let user_id = db.with_test_user().await;
+
+    // Two Assets
+    let weth = AssetFixture::weth_test_asset();
+    let jitosol = AssetFixture::jitosol_test_asset();
+    db.with_test_asset(&weth).await;
+    db.with_test_asset(&jitosol).await;
+
+    // Two Dates
+    let first_dt = DateTime::parse_from_rfc3339("2024-01-01T00:00:00Z")
+        .unwrap()
+        .with_timezone(&Utc);
+    let second_dt = DateTime::parse_from_rfc3339("2024-01-02T00:00:00Z")
+        .unwrap()
+        .with_timezone(&Utc);
+
+    // Rates
+    let weth_first_dt_rate = "1_500".d();
+    let jitosol_first_dt_rate = "100".d();
+    let weth_second_dt_rate = "2_000".d();
+    let jitosol_second_dt_rate = "80".d();
+    let mut tx = db.pool.begin().await.unwrap();
+    appstate
+        .repositories
+        .rate
+        .insert_rates(
+            &mut tx,
+            vec![
+                AssetRate::new(weth.clone(), weth_first_dt_rate),
+                AssetRate::new(jitosol.clone(), jitosol_first_dt_rate),
+            ],
+            first_dt,
+        )
+        .await
+        .unwrap();
+    appstate
+        .repositories
+        .rate
+        .insert_rates(
+            &mut tx,
+            vec![
+                AssetRate::new(weth.clone(), weth_second_dt_rate),
+                AssetRate::new(jitosol.clone(), jitosol_second_dt_rate),
+            ],
+            second_dt,
+        )
+        .await
+        .unwrap();
+    appstate
+        .repositories
+        .outbox
+        .insert_rates_inserted(&mut tx, first_dt)
+        .await
+        .unwrap();
+    appstate
+        .repositories
+        .outbox
+        .insert_rates_inserted(&mut tx, second_dt)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+
+    // User Holdings
+    let weth_holding_amount = "1".d();
+    let jitosol_holding_amount = "2".d();
+    appstate
+        .services
+        .portfolio_service
+        .insert_holding(user_id, weth.id, weth_holding_amount, None)
+        .await
+        .unwrap();
+    appstate
+        .services
+        .portfolio_service
+        .insert_holding(user_id, jitosol.id, jitosol_holding_amount, None)
+        .await
+        .unwrap();
+
+    let computation_result = appstate
+        .services
+        .portfolio_service
+        .compute_pending_snapshots()
+        .await
+        .unwrap();
+
+    let user_historical_portfolio = appstate
+        .repositories
+        .portfolio
+        .get_historical_portfolio_values(user_id)
+        .await
+        .unwrap();
+
+    assert_eq!(computation_result.number_of_users, 1);
+    assert_eq!(computation_result.number_of_snapshots_events, 2);
+    
+    let expected_first_dt_value = "1_700".d();
+    let expected_second_dt_value = "2_160".d();
+
+    // Ordered DESC on date
+    assert_eq!(user_historical_portfolio,
+    vec![
+        PortfolioValueAt::new(expected_second_dt_value, second_dt),
+        PortfolioValueAt::new(expected_first_dt_value, first_dt),
+    ])
 }
