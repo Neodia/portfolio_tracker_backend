@@ -31,7 +31,7 @@ pub fn create_router(state: AppState) -> Router {
         .route("/holdings/{holding_id}", patch(portfolio::update_holding))
         .route("/holdings/{holding_id}", delete(portfolio::delete_holding))
         .route("/", get(portfolio::get_portfolio))
-        .route("/refresh", get(portfolio::refresh_portfolio));
+        .route("/refresh", post(portfolio::refresh_portfolio));
     let protected_routes = Router::new()
         .nest("/assets", asset_routes)
         .nest("/portfolio", portfolio_routes)

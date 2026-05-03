@@ -95,7 +95,7 @@ pub async fn refresh_portfolio(
     let portfolio_response = state
         .services
         .portfolio_service
-        .get_portfolio(user.id)
+        .refresh_portfolio(user.id)
         .await?;
     Ok(Json(portfolio_response))
 }
