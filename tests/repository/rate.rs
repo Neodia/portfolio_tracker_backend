@@ -28,7 +28,7 @@ async fn insert_rates_works() {
     );
     let now = Utc::now();
 
-    let repo = LiveRateRepository::default();
+    let repo = LiveRateRepository::new_from_pool(db.pool.clone());
     let mut tx = db.pool.begin().await.unwrap();
     repo.insert_rates(&mut tx, vec![asset_rate.clone()], now)
         .await

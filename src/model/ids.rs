@@ -30,3 +30,11 @@ impl From<Uuid> for HoldingId {
 impl HoldingId {
     pub fn new() -> Self { Self(Uuid::new_v4()) }
 }
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+pub struct OutboxEventId(pub Uuid);
+impl From<Uuid> for OutboxEventId {
+    fn from(id: Uuid) -> Self {
+        Self(id)
+    }
+}

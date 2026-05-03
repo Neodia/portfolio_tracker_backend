@@ -1,11 +1,10 @@
 use crate::common::{AssetFixture, IntoDecimal, TestApp};
 use chrono::Utc;
 use portfolio_tracker_backend::model::{
-    AssetAllocation, AssetHoldingsWithDrift, AssetRate,
-    HoldingWithAllocation, PortfolioHoldings,
+    AssetAllocation, AssetHoldingsWithDrift, AssetRate, HoldingWithAllocation, PortfolioHoldings,
 };
-use portfolio_tracker_backend::repository::live::LiveRateRepository;
 use portfolio_tracker_backend::repository::RateRepository;
+use portfolio_tracker_backend::repository::live::LiveRateRepository;
 
 /*
    USDC Rate:    1$
@@ -50,7 +49,7 @@ async fn get_portfolio_works() {
     let usdc_expected_allocation = "0".d();
     let usdc_current_expected_allocation = "0.6".d();
     let usdc_expected_drift = "0.6".d();
-    
+
     // JitoSOL
     let jitosol = AssetFixture::jitosol_test_asset();
     let jitosol_amount = "2".d();
@@ -59,7 +58,7 @@ async fn get_portfolio_works() {
     let jitosol_expected_allocation = "0.5".d();
     let jitosol_current_expected_allocation = "0.4".d();
     let jitosol_expected_drift = "-0.1".d();
-    
+
     // WETH
     let weth = AssetFixture::weth_test_asset();
     let weth_rate_usd = "2000".d();
@@ -71,7 +70,7 @@ async fn get_portfolio_works() {
     let usdc_asset_id = db.with_test_asset(&usdc).await;
     let jitosol_asset_id = db.with_test_asset(&jitosol).await;
     let weth_asset_id = db.with_test_asset(&weth).await;
-    let rates_repo = LiveRateRepository::default();
+    let rates_repo = LiveRateRepository::new_from_pool(db.pool.clone());
 
     let now = Utc::now();
 

@@ -1,12 +1,14 @@
 use crate::model::ids::{AssetId, HoldingId, UserId};
-use crate::model::{AssetAllocation, AssetHoldings};
+use crate::model::{AssetAllocation, AssetHoldings, PortfolioValueAt, UserHolding};
 use crate::repository::error::DBError;
 use crate::repository::model::{AssetAllocationDTO, HoldingDTO};
 use crate::repository::traits::PortfolioRepository;
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use rust_decimal::Decimal;
-use sqlx::PgPool;
+use sqlx::{PgPool, PgTransaction};
+use std::collections::HashMap;
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct LivePortfolioRepository {
@@ -161,5 +163,52 @@ impl PortfolioRepository for LivePortfolioRepository {
             .into_values().map(TryFrom::try_from)
             .collect::<Result<Vec<AssetHoldings>, DBError>>()?;
         Ok(holdings)
+    }
+
+    async fn get_all_users_holdings(&self) -> Result<HashMap<UserId, Vec<UserHolding>>, DBError> {
+        let user_holdings = sqlx::query_as!(
+            UserHolding,
+            "SELECT id, user_id, asset_id, amount, description FROM current_holdings"
+        )
+        .fetch_all(&self.pool)
+        .await?
+        .into_iter()
+        .into_group_map_by(|holding| holding.user_id);
+        Ok(user_holdings)
+    }
+
+    async fn insert_portfolio_snapshots(
+        &self,
+        tx: &mut PgTransaction<'_>,
+        user_snapshots: Vec<(&UserId, Decimal)>,
+        at: DateTime<Utc>,
+    ) -> Result<(), DBError> {
+        let (user_ids, snapshots_value_usd): (Vec<Uuid>, Vec<Decimal>) = user_snapshots
+            .iter()
+            .map(|(user, value)| (user.0, *value))
+            .unzip();
+        sqlx::query!(
+            "INSERT INTO portfolio_snapshots (user_id, value_usd, at)
+             SELECT * FROM UNNEST($1::uuid[], $2::numeric[], $3::timestamptz[])",
+            &user_ids as &[Uuid],
+            &snapshots_value_usd as &[Decimal],
+            &vec![at; user_ids.len()] as &[DateTime<Utc>]
+        )
+        .execute(tx.as_mut())
+        .await?;
+        Ok(())
+    }
+
+    async fn get_historical_portfolio_values(&self, user_id: UserId) -> Result<Vec<PortfolioValueAt>, DBError> {
+        let values = sqlx::query_as!(
+            PortfolioValueAt,
+            "SELECT value_usd, at
+             FROM portfolio_snapshots
+             WHERE user_id = $1
+             ORDER BY at DESC",
+            user_id.0
+        ).fetch_all(&self.pool)
+            .await?;
+        Ok(values)
     }
 }

@@ -1,9 +1,10 @@
-use crate::model::ids::{AssetId, HoldingId, UserId};
-use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetRate, Contract, Network, Symbol, User};
+use crate::model::ids::{AssetId, HoldingId, OutboxEventId, UserId};
+use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetRate, Contract, Network, OutboxEvent, PortfolioValueAt, Rate, Symbol, User, UserHolding};
 use crate::repository::error::DBError;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use sqlx::PgTransaction;
+use std::collections::HashMap;
 use std::future::Future;
 
 pub trait AssetRepository: Clone {
@@ -33,12 +34,25 @@ pub trait RateRepository: Clone {
         rates: Vec<AssetRate>,
         now: DateTime<Utc>,
     ) -> impl Future<Output = Result<(), DBError>>;
+    fn get_latest_asset_rates_at(
+        &self,
+        at: DateTime<Utc>,
+    ) -> impl Future<Output = Result<HashMap<AssetId, Rate>, DBError>>;
 }
 
 pub trait OutboxRepository: Clone {
     fn insert_rates_inserted(
         &self,
         tx: &mut PgTransaction,
+        now: DateTime<Utc>,
+    ) -> impl Future<Output = Result<(), DBError>>;
+    fn get_pending_rates_persisted_events(
+        &self,
+    ) -> impl Future<Output = Result<Vec<OutboxEvent>, DBError>>;
+    fn set_pending_snapshot_as_handled(
+        &self,
+        tx: &mut PgTransaction<'_>,
+        id: OutboxEventId,
         now: DateTime<Utc>,
     ) -> impl Future<Output = Result<(), DBError>>;
 }
@@ -82,5 +96,21 @@ pub trait PortfolioRepository: Clone {
         holding_id: HoldingId,
         user_id: UserId,
     ) -> impl Future<Output = Result<(), DBError>>;
-    fn get_holdings(&self, user_id: UserId) -> impl Future<Output = Result<Vec<AssetHoldings>, DBError>>;
+    fn get_holdings(
+        &self,
+        user_id: UserId,
+    ) -> impl Future<Output = Result<Vec<AssetHoldings>, DBError>>;
+    fn get_all_users_holdings(
+        &self,
+    ) -> impl Future<Output = Result<HashMap<UserId, Vec<UserHolding>>, DBError>>;
+    fn insert_portfolio_snapshots(
+        &self,
+        tx: &mut PgTransaction<'_>,
+        user_snapshots: Vec<(&UserId, Decimal)>,
+        at: DateTime<Utc>,
+    ) -> impl Future<Output = Result<(), DBError>>;
+    fn get_historical_portfolio_values(
+        &self,
+        user_id: UserId,
+    ) -> impl Future<Output = Result<Vec<PortfolioValueAt>, DBError>>;
 }

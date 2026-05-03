@@ -188,7 +188,7 @@ async fn get_holdings_works() {
     let jitosol_asset_id = db.with_test_asset(&jitosol).await;
     let weth_asset_id = db.with_test_asset(&weth).await;
     let portfolio_repo = LivePortfolioRepository::new_from_pool(db.pool.clone());
-    let rates_repo = LiveRateRepository::default();
+    let rates_repo = LiveRateRepository::new_from_pool(db.pool.clone());
 
     let now = Utc::now();
 

@@ -11,7 +11,7 @@ async fn main() -> Result<(), AppError> {
     dotenv().ok();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let cg_url = std::env::var("CG_URL").expect("CG_KEY must be set");
+    let cg_url = std::env::var("CG_URL").expect("CG_URL must be set");
     let cg_key = std::env::var("CG_KEY").expect("CG_KEY must be set");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
     let json_logs = std::env::var("JSON_LOGS").is_ok();
@@ -20,9 +20,9 @@ async fn main() -> Result<(), AppError> {
 
     let state = AppState::new(db_url, cg_url, cg_key, jwt_secret).await?;
 
-    let rates_fetching_job_state = state.clone();
 
     // Spawns rates-fetching job
+    let rates_fetching_job_state = state.clone();
     tokio::spawn(async move {
         let mut ticker = tokio::time::interval(Duration::from_mins(60));
         loop {
@@ -31,6 +31,20 @@ async fn main() -> Result<(), AppError> {
                 jobs::rates::fetch_rates_and_persist(rates_fetching_job_state.clone()).await
             {
                 tracing::error!(job="Rate", error=?e,"Rate fetching error");
+            }
+        }
+    });
+
+    // Spawns portfolio snapshot job
+    let portfolio_snapshot_job_state = state.clone();
+    tokio::spawn(async move {
+        let mut ticker = tokio::time::interval(Duration::from_mins(60));
+        loop {
+            ticker.tick().await;
+            if let Err(e) =
+                jobs::portfolio_snapshots::compute_pending_snapshots(portfolio_snapshot_job_state.clone()).await
+            {
+                tracing::error!(job="Portfolio Snapshots", error=?e,"Snapshots computation error");
             }
         }
     });

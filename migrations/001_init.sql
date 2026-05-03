@@ -47,8 +47,8 @@ CREATE TABLE portfolio_snapshots
 (
     user_id    UUID        NOT NULL REFERENCES users (id),
     value_usd  NUMERIC     NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    PRIMARY KEY (user_id, created_at)
+    at TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (user_id, at)
 );
 
 CREATE TABLE outbox
@@ -65,5 +65,5 @@ CREATE INDEX idx_current_holdings_updated ON current_holdings (updated_at);
 CREATE INDEX idx_rates_asset ON rates (asset_id);
 CREATE INDEX idx_rates_at ON rates (rate_at);
 CREATE INDEX idx_snapshots_user ON portfolio_snapshots (user_id);
-CREATE INDEX idx_snapshots_created ON portfolio_snapshots (created_at);
+CREATE INDEX idx_snapshots_created ON portfolio_snapshots (at);
 CREATE INDEX idx_outbox_handled ON outbox (handled_at) WHERE handled_at IS NULL;

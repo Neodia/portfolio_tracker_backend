@@ -37,8 +37,8 @@ impl Repositories {
             pool: pool.clone(),
             asset: LiveAssetRepository::new_from_pool(pool.clone()),
             user: LiveUserRepository::new_from_pool(pool.clone()),
-            rate: LiveRateRepository::default(),
-            outbox: LiveOutboxRepository::default(),
+            rate: LiveRateRepository::new_from_pool(pool.clone()),
+            outbox: LiveOutboxRepository::new_from_pool(pool.clone()),
             portfolio: LivePortfolioRepository::new_from_pool(pool.clone()),
         }
     }

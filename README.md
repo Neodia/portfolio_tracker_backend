@@ -21,3 +21,12 @@ TODO: Make a proper file out of this
 - Testing Strategy: Where relevant I test the whole behavior directly with IT tests (api/service) with Repositories
   tests to ensure the queries are doing what they are supposed to. Unit tests are only used for specific parts of the
   code for specific behaviors, like mappers.
+- Portfolio snapshots take current holdings into account to calculate. I chose this method because I wasn't interested
+  in having historical holdings data (at least for now). If the snapshots were to be taken with historical holdings, I
+  would need to not delete holdings and instead invalidate them, so I could keep the historical holdings and this way
+  calculate portfolio snapshots with those. This is a design decision that suit my current needs.
+- Portfolio snapshots currently processes all users at once. While this is okay for a service of this scale (single
+  user), it would be a good idea to enqueue jobs for ranges of users instead for a service with multiple users to
+  prevent self-DoS
+- Rates-fetching job: With the number of assets/network I have I don't need enqueuing to prevent rate-limiting CG side,
+  but would be needed for a proper prod setup.

@@ -1,14 +1,20 @@
 use crate::client::live::LiveCGClient;
 use crate::model::ids::{AssetId, HoldingId, UserId};
-use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetHoldingsWithDrift, HoldingWithAllocation, PortfolioHoldings, PortfolioResponse};
+use crate::model::{
+    Asset, AssetAllocation, AssetHoldings, AssetHoldingsWithDrift, HoldingWithAllocation,
+    OutboxEvent, PortfolioHoldings, PortfolioResponse, UserHolding,
+};
+use crate::repository::error::DBError;
 use crate::repository::traits::PortfolioRepository;
-use crate::repository::Repositories;
+use crate::repository::{OutboxRepository, RateRepository, Repositories};
 use crate::service::error::ServiceError;
+use crate::service::model::SnapshotsComputationResult;
 use crate::service::rates::RatesService;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
+use futures::future::try_join_all;
 use itertools::Itertools;
-use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
+use rust_decimal::prelude::Zero;
 use std::collections::HashMap;
 
 #[derive(Clone)]
@@ -18,7 +24,10 @@ pub struct PortfolioService {
 }
 impl PortfolioService {
     pub fn new(repositories: Repositories, rates_service: RatesService<LiveCGClient>) -> Self {
-        Self { repositories, rates_service }
+        Self {
+            repositories,
+            rates_service,
+        }
     }
     pub async fn upsert_expected_asset_allocation(
         &self,
@@ -53,7 +62,8 @@ impl PortfolioService {
         description: Option<String>,
     ) -> Result<HoldingId, ServiceError> {
         let now = Utc::now();
-        let id = self.repositories
+        let id = self
+            .repositories
             .portfolio
             .insert_holding(user_id, asset_id, amount, description, now)
             .await?;
@@ -73,7 +83,11 @@ impl PortfolioService {
             .await?;
         Ok(())
     }
-    pub async fn delete_holding(&self, user_id: UserId, holding_id: HoldingId) -> Result<(), ServiceError> {
+    pub async fn delete_holding(
+        &self,
+        user_id: UserId,
+        holding_id: HoldingId,
+    ) -> Result<(), ServiceError> {
         self.repositories
             .portfolio
             .delete_holding(holding_id, user_id)
@@ -112,20 +126,105 @@ impl PortfolioService {
         let user_holdings =
             PortfolioHoldings::new(asset_holdings_with_drift, total_portfolio_value_usd);
 
+        let historical_portfolio_values = self
+            .repositories
+            .portfolio
+            .get_historical_portfolio_values(user_id)
+            .await?;
+
         Ok(PortfolioResponse::new(
             expected_allocations,
             user_holdings,
-            vec![], // TODO: Get this from DB when historical portfolio job is done
+            historical_portfolio_values,
         ))
     }
 
-    pub async fn refresh_portfolio(&self, user_id: UserId) -> Result<PortfolioResponse, ServiceError> {
+    pub async fn refresh_portfolio(
+        &self,
+        user_id: UserId,
+    ) -> Result<PortfolioResponse, ServiceError> {
         let holdings = self.repositories.portfolio.get_holdings(user_id).await?;
-        let holdings_assets: Vec<Asset> = holdings.into_iter().map(|holding| holding.asset_rate.asset).collect();
-        
-        self.rates_service.fetch_asset_rates_and_persist(holdings_assets).await?;
-        
+        let holdings_assets: Vec<Asset> = holdings
+            .into_iter()
+            .map(|holding| holding.asset_rate.asset)
+            .collect();
+
+        self.rates_service
+            .fetch_asset_rates_and_persist(holdings_assets)
+            .await?;
+
         self.get_portfolio(user_id).await
+    }
+
+    pub async fn compute_pending_snapshots(
+        &self,
+    ) -> Result<SnapshotsComputationResult, ServiceError> {
+        let events = self
+            .repositories
+            .outbox
+            .get_pending_rates_persisted_events()
+            .await?;
+
+        let user_holdings = self.repositories.portfolio.get_all_users_holdings().await?;
+
+        let now = Utc::now();
+        let handle_events_f: Vec<_> = events
+            .iter()
+            .map(async |event| {
+                self.calculate_portfolio_snapshots_at_event_date(event, &user_holdings, now)
+                    .await
+            })
+            .collect();
+
+        try_join_all(handle_events_f).await?;
+
+        Ok(SnapshotsComputationResult::new(
+            user_holdings.keys().len(),
+            events.len(),
+        ))
+    }
+
+    async fn calculate_portfolio_snapshots_at_event_date(
+        &self,
+        event: &OutboxEvent,
+        user_holdings: &HashMap<UserId, Vec<UserHolding>>,
+        now: DateTime<Utc>,
+    ) -> Result<(), DBError> {
+        let latest_rates_at_event_date = self
+            .repositories
+            .rate
+            .get_latest_asset_rates_at(event.created_at)
+            .await?;
+
+        let users_portfolio_value_at: Vec<_> = user_holdings
+            .iter()
+            .map(|(user_id, user_holdings)| {
+                let user_portfolio_value = user_holdings
+                    .iter()
+                    .map(|holding| {
+                        let asset_rate_at_event_date = latest_rates_at_event_date
+                            .get(&holding.asset_id)
+                            .map(|rate| rate.rate_usd)
+                            .unwrap_or_else(Decimal::zero);
+
+                        holding.amount * asset_rate_at_event_date
+                    })
+                    .sum();
+                (user_id, user_portfolio_value)
+            })
+            .collect();
+
+        let mut tx = self.repositories.begin_transaction().await?;
+        self.repositories
+            .portfolio
+            .insert_portfolio_snapshots(&mut tx, users_portfolio_value_at, event.created_at)
+            .await?;
+        self.repositories
+            .outbox
+            .set_pending_snapshot_as_handled(&mut tx, event.id, now)
+            .await?;
+        tx.commit().await?;
+        Ok(())
     }
 
     fn compute_drift_for_holding(
@@ -302,8 +401,7 @@ mod tests {
         let contract = Contract::from("J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn");
         let amount_of_asset = Decimal::one();
 
-        let expected_allocations_map: HashMap<AssetId, &AssetAllocation> =
-            HashMap::from([]);
+        let expected_allocations_map: HashMap<AssetId, &AssetAllocation> = HashMap::from([]);
 
         let holding_id = HoldingId::new();
         let holdings = AssetHoldings::new(

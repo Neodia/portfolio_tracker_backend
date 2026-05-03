@@ -1,13 +1,22 @@
-use crate::model::AssetRate;
+use crate::model::ids::AssetId;
+use crate::model::{AssetRate, Rate};
 use crate::repository::error::DBError;
 use crate::repository::RateRepository;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
-use sqlx::PgTransaction;
+use sqlx::{PgPool, PgTransaction};
+use std::collections::HashMap;
 use uuid::Uuid;
 
-#[derive(Clone, Default)]
-pub struct LiveRateRepository;
+#[derive(Clone)]
+pub struct LiveRateRepository {
+    pool: PgPool,
+}
+impl LiveRateRepository {
+    pub fn new_from_pool(pool: PgPool) -> Self {
+        Self { pool }
+    }
+}
 impl RateRepository for LiveRateRepository {
     async fn insert_rates(
         &self,
@@ -29,5 +38,26 @@ impl RateRepository for LiveRateRepository {
         .await?;
 
         Ok(())
+    }
+
+    async fn get_latest_asset_rates_at(
+        &self,
+        at: DateTime<Utc>,
+    ) -> Result<HashMap<AssetId, Rate>, DBError> {
+        let rates: HashMap<AssetId, Rate> = sqlx::query_as!(
+            Rate,
+            "SELECT DISTINCT ON (asset_id) asset_id, rate_usd, rate_at as at
+             FROM rates 
+             WHERE rate_at <= $1 
+             ORDER BY asset_id, rate_at DESC",
+            at,
+        )
+        .fetch_all(&self.pool)
+        .await?
+        .into_iter()
+        .map(|r| (r.asset_id, r))
+        .collect();
+        
+        Ok(rates)
     }
 }
