@@ -1,4 +1,4 @@
-use super::client::CGClient;
+use super::CGClient;
 use super::model::GetRatesFromNetworkResponse;
 use crate::client::cg_model::CGGetRatesFromNetworkResponse;
 use crate::client::error::ClientError;

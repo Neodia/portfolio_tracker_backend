@@ -14,24 +14,24 @@ pub async fn upsert_expected_asset_allocation(
     Path(asset_id): Path<AssetId>,
     ValidatedJson(req): ValidatedJson<AddExpectedAllocationRequest>,
 ) -> Result<Json<()>, ApiError> {
-    let response = state
+    state
         .services
         .portfolio_service
         .upsert_expected_asset_allocation(user.id, asset_id, req.expected_allocation_pct)
         .await?;
-    Ok(Json(response))
+    Ok(Json(()))
 }
 pub async fn delete_expected_asset_allocation(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     Path(asset_id): Path<AssetId>,
 ) -> Result<Json<()>, ApiError> {
-    let response = state
+    state
         .services
         .portfolio_service
         .delete_expected_asset_allocation(user.id, asset_id)
         .await?;
-    Ok(Json(response))
+    Ok(Json(()))
 }
 pub async fn insert_holding(
     State(state): State<AppState>,
@@ -51,24 +51,24 @@ pub async fn update_holding(
     Path(holding_id): Path<HoldingId>,
     ValidatedJson(req): ValidatedJson<UpdateHoldingRequest>,
 ) -> Result<Json<()>, ApiError> {
-    let response = state
+    state
         .services
         .portfolio_service
         .update_holding(user.id, holding_id, req.amount, req.description)
         .await?;
-    Ok(Json(response))
+    Ok(Json(()))
 }
 pub async fn delete_holding(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     Path(holding_id): Path<HoldingId>,
 ) -> Result<Json<()>, ApiError> {
-    let response = state
+    state
         .services
         .portfolio_service
         .delete_holding(user.id, holding_id)
         .await?;
-    Ok(Json(response))
+    Ok(Json(()))
 }
 
 pub async fn get_portfolio(

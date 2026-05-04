@@ -11,6 +11,12 @@ impl From<Uuid> for UserId {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub struct AssetId(pub Uuid);
+impl Default for AssetId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AssetId {
     pub fn new() -> Self {
         Self(Uuid::new_v4())
@@ -29,6 +35,12 @@ impl From<Uuid> for HoldingId {
         Self(id)
     }
 }
+impl Default for HoldingId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HoldingId {
     pub fn new() -> Self {
         Self(Uuid::new_v4())
