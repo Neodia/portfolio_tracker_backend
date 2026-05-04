@@ -1,5 +1,3 @@
-pub struct Token(pub String);
-
 pub struct SnapshotsComputationResult {
     pub number_of_users: usize,
     pub number_of_snapshots_events: usize,

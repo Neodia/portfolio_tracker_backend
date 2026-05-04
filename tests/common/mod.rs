@@ -3,13 +3,13 @@ use portfolio_tracker_backend::api::router::create_router;
 use portfolio_tracker_backend::appstate::AppState;
 use portfolio_tracker_backend::model::ids::{AssetId, HoldingId, UserId};
 use portfolio_tracker_backend::model::{Asset, Contract, Network, Symbol};
-use portfolio_tracker_backend::service::model::Token;
 use rust_decimal::Decimal;
 use sqlx::PgPool;
 use testcontainers::ImageExt;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::postgres::Postgres;
 use uuid::Uuid;
+use portfolio_tracker_backend::auth::model::Token;
 
 pub trait IntoDecimal {
     fn d(self) -> Decimal;

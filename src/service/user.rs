@@ -1,7 +1,7 @@
 use crate::auth::{create_token, hash_password, verify_password};
+use crate::auth::model::Token;
 use crate::repository::UserRepository;
 use crate::service::error::ServiceError;
-use crate::service::model::Token;
 
 #[derive(Clone)]
 pub struct UserService<R: UserRepository> {
