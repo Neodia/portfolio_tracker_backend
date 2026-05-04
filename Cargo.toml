@@ -10,7 +10,6 @@ serde = { version = "1", features = ["derive"] }
 rust_decimal = { version = "1", features = ["serde-float"] }
 thiserror = "2.0.18"
 sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "macros", "rust_decimal", "uuid", "chrono"] }
-dotenvy = "0.15"
 itertools = "0.14"
 futures = "0.3.32"
 strum = { version = "0.28.0", features = ["derive"] }
@@ -25,6 +24,7 @@ chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 validator = { version = "0.19", features = ["derive"] }
+config = "0.15.22"
 
 
 [dev-dependencies]

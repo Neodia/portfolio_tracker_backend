@@ -1,5 +1,5 @@
-use dotenvy::dotenv;
 use portfolio_tracker_backend::api::router::create_router;
+use portfolio_tracker_backend::appconfig::AppConfig;
 use portfolio_tracker_backend::appstate::AppState;
 use portfolio_tracker_backend::jobs;
 use portfolio_tracker_backend::model::error::AppError;
@@ -8,18 +8,17 @@ use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
-    dotenv().ok();
+    let config = AppConfig::load()?;
 
-    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let cg_url = std::env::var("CG_URL").expect("CG_URL must be set");
-    let cg_key = std::env::var("CG_KEY").expect("CG_KEY must be set");
-    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-    let json_logs = std::env::var("JSON_LOGS").is_ok();
+    init_tracing(config.json_logs);
 
-    init_tracing(json_logs);
-
-    let state = AppState::new(db_url, cg_url, cg_key, jwt_secret).await?;
-
+    let state = AppState::new(
+        config.database_url,
+        config.cg_url,
+        config.cg_key,
+        config.jwt_secret,
+    )
+    .await?;
 
     // Spawns rates-fetching job
     let rates_fetching_job_state = state.clone();
@@ -41,8 +40,10 @@ async fn main() -> Result<(), AppError> {
         let mut ticker = tokio::time::interval(Duration::from_mins(60));
         loop {
             ticker.tick().await;
-            if let Err(e) =
-                jobs::portfolio_snapshots::compute_pending_snapshots(portfolio_snapshot_job_state.clone()).await
+            if let Err(e) = jobs::portfolio_snapshots::compute_pending_snapshots(
+                portfolio_snapshot_job_state.clone(),
+            )
+            .await
             {
                 tracing::error!(job="Portfolio Snapshots", error=?e,"Snapshots computation error");
             }
