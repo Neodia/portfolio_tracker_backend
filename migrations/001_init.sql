@@ -1,4 +1,4 @@
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id            UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
     email         VARCHAR     NOT NULL UNIQUE,
@@ -6,7 +6,7 @@ CREATE TABLE users
     created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE assets
+CREATE TABLE IF NOT EXISTS assets
 (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     symbol           VARCHAR NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE assets
     UNIQUE (network, contract_address)
 );
 
-CREATE TABLE expected_portfolio_allocations
+CREATE TABLE IF NOT EXISTS expected_portfolio_allocations
 (
     user_id    UUID        NOT NULL REFERENCES users (id),
     asset_id   UUID        NOT NULL REFERENCES assets (id),
@@ -25,7 +25,7 @@ CREATE TABLE expected_portfolio_allocations
     PRIMARY KEY (user_id, asset_id)
 );
 
-CREATE TABLE current_holdings
+CREATE TABLE IF NOT EXISTS current_holdings
 (
     id          UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
     user_id     UUID        NOT NULL REFERENCES users (id),
@@ -35,7 +35,7 @@ CREATE TABLE current_holdings
     updated_at  TIMESTAMPTZ NOT NULL
 );
 
-CREATE TABLE rates
+CREATE TABLE IF NOT EXISTS rates
 (
     asset_id UUID        NOT NULL REFERENCES assets (id),
     rate_usd NUMERIC     NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE rates
     PRIMARY KEY (asset_id, rate_at)
 );
 
-CREATE TABLE portfolio_snapshots
+CREATE TABLE IF NOT EXISTS portfolio_snapshots
 (
     user_id    UUID        NOT NULL REFERENCES users (id),
     value_usd  NUMERIC     NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE portfolio_snapshots
     PRIMARY KEY (user_id, at)
 );
 
-CREATE TABLE outbox
+CREATE TABLE IF NOT EXISTS outbox
 (
     id         UUID PRIMARY KEY     DEFAULT gen_random_uuid(),
     event_type VARCHAR     NOT NULL,
@@ -60,10 +60,10 @@ CREATE TABLE outbox
 );
 
 -- Indexes
-CREATE INDEX idx_current_holdings_user ON current_holdings (user_id);
-CREATE INDEX idx_current_holdings_updated ON current_holdings (updated_at);
-CREATE INDEX idx_rates_asset ON rates (asset_id);
-CREATE INDEX idx_rates_at ON rates (rate_at);
-CREATE INDEX idx_snapshots_user ON portfolio_snapshots (user_id);
-CREATE INDEX idx_snapshots_created ON portfolio_snapshots (at);
-CREATE INDEX idx_outbox_handled ON outbox (handled_at) WHERE handled_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_current_holdings_user ON current_holdings (user_id);
+CREATE INDEX IF NOT EXISTS idx_current_holdings_updated ON current_holdings (updated_at);
+CREATE INDEX IF NOT EXISTS idx_rates_asset ON rates (asset_id);
+CREATE INDEX IF NOT EXISTS idx_rates_at ON rates (rate_at);
+CREATE INDEX IF NOT EXISTS idx_snapshots_user ON portfolio_snapshots (user_id);
+CREATE INDEX IF NOT EXISTS idx_snapshots_created ON portfolio_snapshots (at);
+CREATE INDEX IF NOT EXISTS idx_outbox_handled ON outbox (handled_at) WHERE handled_at IS NULL;

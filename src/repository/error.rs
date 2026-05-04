@@ -5,6 +5,9 @@ pub enum DBError {
     #[error("Database Error: {0}")]
     ConnectorError(#[from] sqlx::Error),
 
+    #[error("Database Error: {0}")]
+    MigrationError(#[from] sqlx::migrate::MigrateError),
+
     #[error("Network {0} could not be deserialized")]
     NetworkDeserializeError(String),
 

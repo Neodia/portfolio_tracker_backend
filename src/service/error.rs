@@ -43,11 +43,16 @@ impl From<DBError> for ServiceError {
             }
 
             // Internal, to log
+            DBError::NetworkDeserializeError(err) => {
+                ServiceError::InternalServerError(err.to_string())
+            }
+
+            // At startup, won't happen when running
             DBError::ConnectorError(_) => {
                 ServiceError::InternalServerError("Internal Server Error".to_string())
             }
-            DBError::NetworkDeserializeError(err) => {
-                ServiceError::InternalServerError(err.to_string())
+            DBError::MigrationError(_) => {
+                ServiceError::InternalServerError("Internal Server Error".to_string())
             }
         }
     }
