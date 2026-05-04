@@ -1,12 +1,12 @@
-use crate::api::ValidatedJson;
 use crate::api::auth::AuthenticatedUser;
 use crate::api::error::ApiError;
-use crate::api::model::{AddExpectedAllocationRequest, AddHoldingRequest, UpdateHoldingRequest};
+use crate::api::model::{AddExpectedAllocationRequest, AddHoldingRequest, AddHoldingResponse, UpdateHoldingRequest};
+use crate::api::ValidatedJson;
 use crate::appstate::AppState;
-use crate::model::PortfolioResponse;
 use crate::model::ids::{AssetId, HoldingId};
-use axum::Json;
+use crate::model::PortfolioResponse;
 use axum::extract::{Path, State};
+use axum::Json;
 
 pub async fn upsert_expected_asset_allocation(
     State(state): State<AppState>,
@@ -37,13 +37,13 @@ pub async fn insert_holding(
     State(state): State<AppState>,
     user: AuthenticatedUser,
     ValidatedJson(req): ValidatedJson<AddHoldingRequest>,
-) -> Result<Json<()>, ApiError> {
-    state
+) -> Result<Json<AddHoldingResponse>, ApiError> {
+    let holding_id = state
         .services
         .portfolio_service
         .insert_holding(user.id, req.asset_id, req.amount, req.description)
         .await?;
-    Ok(Json(()))
+    Ok(Json(AddHoldingResponse { holding_id }))
 }
 pub async fn update_holding(
     State(state): State<AppState>,

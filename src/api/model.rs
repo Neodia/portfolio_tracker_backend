@@ -1,4 +1,4 @@
-use crate::model::ids::AssetId;
+use crate::model::ids::{AssetId, HoldingId};
 use crate::model::{Contract, Network, Symbol};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -50,6 +50,10 @@ pub struct AddHoldingRequest {
     pub asset_id: AssetId,
     pub amount: Decimal,
     pub description: Option<String>,
+}
+#[derive(Serialize)]
+pub struct AddHoldingResponse {
+    pub holding_id: HoldingId,
 }
 #[derive(Deserialize, Clone, Debug, Validate)]
 pub struct UpdateHoldingRequest {
