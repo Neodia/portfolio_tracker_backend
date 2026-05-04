@@ -1,5 +1,5 @@
 use crate::common::{AssetFixture, DBFixture};
-use chrono::Utc;
+use chrono::{SubsecRound, Utc};
 use portfolio_tracker_backend::model::{Asset, AssetRate};
 use portfolio_tracker_backend::repository::RateRepository;
 use portfolio_tracker_backend::repository::live::LiveRateRepository;
@@ -52,7 +52,7 @@ async fn insert_rates_works() {
         .unwrap();
 
     assert_eq!(
-        (resp.asset_id, resp.rate_usd, resp.rate_at),
-        (asset_id.0, asset_rate.rate_usd, now)
+        (resp.asset_id, resp.rate_usd, resp.rate_at.trunc_subsecs(6)),
+        (asset_id.0, asset_rate.rate_usd, now.trunc_subsecs(6))
     );
 }
