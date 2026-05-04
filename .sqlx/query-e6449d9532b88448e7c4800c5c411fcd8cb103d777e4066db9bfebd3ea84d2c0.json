@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH latest_rates AS (\n                SELECT DISTINCT ON (asset_id)\n                    asset_id,\n                    rate_usd\n                FROM rates\n                ORDER BY asset_id, rate_at DESC\n            )\n            SELECT holding.id, assets.id as asset_id, assets.symbol, assets.name, assets.network, assets.contract_address, holding.amount, holding.description, latest_rates.rate_usd\n            FROM current_holdings as holding\n            INNER JOIN assets ON assets.id = holding.asset_id\n            INNER JOIN latest_rates ON latest_rates.asset_id = holding.asset_id\n            WHERE holding.user_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "asset_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "symbol",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "network",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "contract_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "amount",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 7,
+        "name": "description",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "rate_usd",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "e6449d9532b88448e7c4800c5c411fcd8cb103d777e4066db9bfebd3ea84d2c0"
+}

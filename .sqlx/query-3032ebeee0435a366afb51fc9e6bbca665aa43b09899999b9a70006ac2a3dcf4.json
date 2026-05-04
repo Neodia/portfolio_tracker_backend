@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM expected_portfolio_allocations\n             WHERE user_id = $1\n             AND asset_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3032ebeee0435a366afb51fc9e6bbca665aa43b09899999b9a70006ac2a3dcf4"
+}

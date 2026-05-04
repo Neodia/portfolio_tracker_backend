@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM current_holdings\n             WHERE id = $1\n             AND user_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5ed0a2c7a8bcb06bfb59b4a366c575c5093de6e8f41e8ad6152d539393f8f6d8"
+}

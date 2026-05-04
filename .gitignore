@@ -1,8 +1,9 @@
 /target
+.DS_Store
 .env
+.env.production
 .cargo
 .idea
-.sqlx
 project.zip
 seed.sql
 seed_holdings.sql

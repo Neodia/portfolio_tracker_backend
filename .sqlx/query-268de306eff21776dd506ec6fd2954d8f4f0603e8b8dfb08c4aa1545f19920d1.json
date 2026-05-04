@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT assets.id, assets.symbol, assets.name, assets.network, assets.contract_address, alloc.percentage as allocation\n             FROM expected_portfolio_allocations as alloc\n             INNER JOIN assets ON alloc.asset_id = assets.id\n             WHERE alloc.user_id = $1\n             ORDER BY alloc.percentage DESC, assets.symbol",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "symbol",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "network",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "contract_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "allocation",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "268de306eff21776dd506ec6fd2954d8f4f0603e8b8dfb08c4aa1545f19920d1"
+}

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO portfolio_snapshots (user_id, value_usd, at)\n             SELECT * FROM UNNEST($1::uuid[], $2::numeric[], $3::timestamptz[])",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "NumericArray",
+        "TimestamptzArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "562e5c560334b01f5b1628a3afffe3642c408a9e9e4fe7f714f56dea3f09f289"
+}

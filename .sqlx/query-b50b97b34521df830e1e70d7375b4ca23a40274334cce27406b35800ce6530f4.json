@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO rates (asset_id, rate_usd, rate_at)\n     SELECT * FROM UNNEST($1::uuid[], $2::numeric[], $3::timestamptz[])",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "NumericArray",
+        "TimestamptzArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b50b97b34521df830e1e70d7375b4ca23a40274334cce27406b35800ce6530f4"
+}

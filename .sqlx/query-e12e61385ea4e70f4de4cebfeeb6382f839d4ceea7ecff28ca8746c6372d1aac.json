@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO outbox (id, event_type, created_at, handled_at) VALUES (gen_random_uuid(), $1, $2, NULL)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e12e61385ea4e70f4de4cebfeeb6382f839d4ceea7ecff28ca8746c6372d1aac"
+}

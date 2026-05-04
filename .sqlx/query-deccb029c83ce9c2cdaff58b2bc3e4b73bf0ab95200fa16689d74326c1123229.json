@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT value_usd, at\n             FROM portfolio_snapshots\n             WHERE user_id = $1\n             ORDER BY at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "value_usd",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "deccb029c83ce9c2cdaff58b2bc3e4b73bf0ab95200fa16689d74326c1123229"
+}

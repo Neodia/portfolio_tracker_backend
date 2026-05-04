@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO current_holdings (id, user_id, asset_id, amount, description, updated_at)\n             VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)\n             RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Numeric",
+        "Varchar",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a26d073b9b510be2477568857eef1e38cf291c4dffc87f1ee4a7dbf573152cf8"
+}
