@@ -1,19 +1,30 @@
 use crate::common::{AssetFixture, DBFixture};
 use chrono::Utc;
 use portfolio_tracker_backend::model::{Asset, AssetRate};
-use portfolio_tracker_backend::repository::live::LiveRateRepository;
 use portfolio_tracker_backend::repository::RateRepository;
-use rust_decimal::prelude::FromPrimitive;
+use portfolio_tracker_backend::repository::live::LiveRateRepository;
 use rust_decimal::Decimal;
+use rust_decimal::prelude::FromPrimitive;
 
 #[tokio::test]
 async fn insert_rates_works() {
     let db = DBFixture::new().await;
 
-    let Asset { id: _, symbol, name, network, contract_address } = AssetFixture::jitosol_test_asset();
+    let Asset {
+        id: _,
+        symbol,
+        name,
+        network,
+        contract_address,
+    } = AssetFixture::jitosol_test_asset();
 
     let asset_id = db
-        .insert_asset(symbol.0.as_str(), name.as_str(), network.to_id(), contract_address.0.as_str())
+        .insert_asset(
+            symbol.0.as_str(),
+            name.as_str(),
+            network.to_id(),
+            contract_address.0.as_str(),
+        )
         .await;
 
     let asset_rate = AssetRate::new(

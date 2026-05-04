@@ -1,11 +1,11 @@
 mod asset;
 mod outbox;
+mod portfolio;
 mod rate;
 mod user;
-mod portfolio;
 
 pub use asset::*;
 pub use outbox::*;
+pub use portfolio::*;
 pub use rate::*;
 pub use user::*;
-pub use portfolio::*;

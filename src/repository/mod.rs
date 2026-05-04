@@ -31,9 +31,7 @@ impl Repositories {
     pub async fn connect(database_url: String) -> Result<Self, DBError> {
         let pg_pool = PgPool::connect(database_url.as_str()).await?;
 
-        sqlx::migrate!("./migrations")
-            .run(&pg_pool)
-            .await?;
+        sqlx::migrate!("./migrations").run(&pg_pool).await?;
 
         Ok(Repositories::from(pg_pool))
     }

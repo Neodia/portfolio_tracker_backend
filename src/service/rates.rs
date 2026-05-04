@@ -1,6 +1,6 @@
+use crate::client::CGClient;
 use crate::client::error::ClientError;
 use crate::client::model::{BlockchainAssetRate, GetRatesFromNetworkResponse};
-use crate::client::CGClient;
 use crate::model::{Asset, AssetRate, Contract, Network};
 use crate::repository::{AssetRepository, OutboxRepository, RateRepository, Repositories};
 use crate::service::error::ServiceError;
@@ -27,7 +27,10 @@ impl<C: CGClient> RatesService<C> {
         self.fetch_asset_rates_and_persist(assets).await?;
         Ok(())
     }
-    pub async fn fetch_asset_rates_and_persist(&self, assets: Vec<Asset>) -> Result<(), ServiceError> {
+    pub async fn fetch_asset_rates_and_persist(
+        &self,
+        assets: Vec<Asset>,
+    ) -> Result<(), ServiceError> {
         let assets_per_network: HashMap<Network, Vec<&Asset>> =
             assets.iter().into_group_map_by(|asset| asset.network);
 

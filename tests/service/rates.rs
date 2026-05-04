@@ -57,7 +57,11 @@ async fn fetch_rates_inserts_rates_and_outbox_event() {
     )
     .await;
 
-    let result = state.services.rates_service.fetch_all_rates_and_persist().await;
+    let result = state
+        .services
+        .rates_service
+        .fetch_all_rates_and_persist()
+        .await;
     assert!(result.is_ok());
 
     let rates = sqlx::query!("SELECT * FROM rates")
@@ -121,7 +125,11 @@ async fn fetch_rates_handles_missing_rate_gracefully() {
     )
     .await;
 
-    let result = state.services.rates_service.fetch_all_rates_and_persist().await;
+    let result = state
+        .services
+        .rates_service
+        .fetch_all_rates_and_persist()
+        .await;
     assert!(result.is_ok());
 
     let rates = sqlx::query!("SELECT * FROM rates")

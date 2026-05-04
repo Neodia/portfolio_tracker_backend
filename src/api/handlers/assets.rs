@@ -1,21 +1,13 @@
+use crate::api::ValidatedJson;
 use crate::api::error::ApiError;
 use crate::api::model::AddAssetRequest;
-use crate::api::ValidatedJson;
 use crate::appstate::AppState;
 use crate::model::Asset;
-use axum::extract::State;
 use axum::Json;
+use axum::extract::State;
 
-pub async fn get_all_assets(
-    State(state): State<AppState>,
-) -> Result<Json<Vec<Asset>>, ApiError> {
-    Ok(Json(
-        state
-            .services
-            .asset_service
-            .get_all_assets()
-            .await?
-    ))
+pub async fn get_all_assets(State(state): State<AppState>) -> Result<Json<Vec<Asset>>, ApiError> {
+    Ok(Json(state.services.asset_service.get_all_assets().await?))
 }
 
 pub async fn insert_asset(

@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc};
 use crate::model::ids::OutboxEventId;
+use chrono::{DateTime, Utc};
 
 #[derive(strum::Display)]
 pub enum OutboxEventType {

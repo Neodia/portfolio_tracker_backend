@@ -1,5 +1,8 @@
 use crate::model::ids::{AssetId, HoldingId, OutboxEventId, UserId};
-use crate::model::{Asset, AssetAllocation, AssetHoldings, AssetRate, Contract, Network, OutboxEvent, PortfolioValueAt, Rate, Symbol, User, UserHolding};
+use crate::model::{
+    Asset, AssetAllocation, AssetHoldings, AssetRate, Contract, Network, OutboxEvent,
+    PortfolioValueAt, Rate, Symbol, User, UserHolding,
+};
 use crate::repository::error::DBError;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;

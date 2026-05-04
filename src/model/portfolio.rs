@@ -1,5 +1,5 @@
-use serde::Serialize;
 use crate::model::{AssetAllocation, PortfolioHoldings, PortfolioValueAt};
+use serde::Serialize;
 
 #[derive(Serialize, PartialEq, Debug)]
 pub struct PortfolioResponse {

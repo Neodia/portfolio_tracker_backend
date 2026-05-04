@@ -2,6 +2,7 @@ pub mod error;
 pub mod model;
 
 use crate::auth::error::AuthError;
+use crate::auth::model::Token;
 use crate::model::Claims;
 use crate::model::ids::UserId;
 use argon2::password_hash::SaltString;
@@ -10,7 +11,6 @@ use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use axum::http::HeaderMap;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use crate::auth::model::Token;
 
 pub fn hash_password(password: &str) -> Result<String, AuthError> {
     let salt = SaltString::generate(&mut OsRng);

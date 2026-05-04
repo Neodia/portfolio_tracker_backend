@@ -29,8 +29,12 @@ impl From<AuthError> for ServiceError {
 
             // Internal, to log
             AuthError::ClaimsEncodeError(err) => ServiceError::InternalServerError(err.to_string()),
-            AuthError::PasswordHashingFailed(err) => ServiceError::InternalServerError(err.to_string()),
-            AuthError::PasswordParsingFailed(err) => ServiceError::InternalServerError(err.to_string()),
+            AuthError::PasswordHashingFailed(err) => {
+                ServiceError::InternalServerError(err.to_string())
+            }
+            AuthError::PasswordParsingFailed(err) => {
+                ServiceError::InternalServerError(err.to_string())
+            }
         }
     }
 }
@@ -62,13 +66,21 @@ impl From<ClientError> for ServiceError {
         match client_error {
             // Internal, to log
             ClientError::HttpError(err) => ServiceError::InternalServerError(err.to_string()),
-            ClientError::Unauthorized => ServiceError::InternalServerError("CG Key is outdated".to_string()),
-            ClientError::RateLimited => ServiceError::InternalServerError("CG rate limited".to_string()),
-            ClientError::NotFound => ServiceError::InternalServerError("CG url not found".to_string()),
+            ClientError::Unauthorized => {
+                ServiceError::InternalServerError("CG Key is outdated".to_string())
+            }
+            ClientError::RateLimited => {
+                ServiceError::InternalServerError("CG rate limited".to_string())
+            }
+            ClientError::NotFound => {
+                ServiceError::InternalServerError("CG url not found".to_string())
+            }
             ClientError::Unexpected(err) => ServiceError::InternalServerError(err.to_string()),
 
             // Doesn't get bubbled up
-            err @ ClientError::MissingAssetRateError(_) => ServiceError::InternalServerError(err.to_string())
+            err @ ClientError::MissingAssetRateError(_) => {
+                ServiceError::InternalServerError(err.to_string())
+            }
         }
     }
 }

@@ -1,8 +1,8 @@
 use crate::common::{AssetFixture, DBFixture};
-use portfolio_tracker_backend::model::ids::AssetId;
 use portfolio_tracker_backend::model::Asset;
-use portfolio_tracker_backend::repository::live::LiveAssetRepository;
+use portfolio_tracker_backend::model::ids::AssetId;
 use portfolio_tracker_backend::repository::AssetRepository;
+use portfolio_tracker_backend::repository::live::LiveAssetRepository;
 
 #[tokio::test]
 async fn get_all_assets_returns_data_after_inserting() {

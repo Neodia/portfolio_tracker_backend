@@ -1,7 +1,9 @@
 use config::{ConfigError, Environment, File};
 use serde::Deserialize;
 
-fn default_false() -> bool { false }
+fn default_false() -> bool {
+    false
+}
 
 #[derive(Deserialize)]
 pub struct AppConfig {

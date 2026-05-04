@@ -1,3 +1,4 @@
+use crate::common::AssetFixture;
 use portfolio_tracker_backend::client::CGClient;
 use portfolio_tracker_backend::client::error::ClientError;
 use portfolio_tracker_backend::client::live::LiveCGClient;
@@ -8,7 +9,6 @@ use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
-use crate::common::AssetFixture;
 
 #[tokio::test]
 async fn get_rates_per_network_returns_mapped_response() {

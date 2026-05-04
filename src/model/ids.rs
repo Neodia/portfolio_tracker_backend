@@ -12,7 +12,9 @@ impl From<Uuid> for UserId {
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub struct AssetId(pub Uuid);
 impl AssetId {
-    pub fn new() -> Self { Self(Uuid::new_v4()) }
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
 }
 impl From<Uuid> for AssetId {
     fn from(id: Uuid) -> Self {
@@ -28,7 +30,9 @@ impl From<Uuid> for HoldingId {
     }
 }
 impl HoldingId {
-    pub fn new() -> Self { Self(Uuid::new_v4()) }
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]

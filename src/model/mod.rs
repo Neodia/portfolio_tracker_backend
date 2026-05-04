@@ -6,17 +6,17 @@ mod asset_rate;
 mod claims;
 mod contract;
 pub mod error;
+pub mod ids;
 mod network;
 mod outbox_event;
 mod portfolio;
 mod portfolio_holdings;
 mod portfolio_value_at;
+mod rate;
 mod symbol;
 #[cfg(test)]
 mod tests;
 mod user;
-pub mod ids;
-mod rate;
 mod user_holding;
 
 pub use asset::*;

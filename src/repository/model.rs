@@ -16,7 +16,7 @@ pub struct AssetAllocationDTO {
     pub name: String,
     pub network: String,
     pub contract_address: Contract,
-    pub allocation: Decimal // Percentage
+    pub allocation: Decimal, // Percentage
 }
 
 pub struct HoldingDTO {

@@ -1,7 +1,7 @@
 use crate::service::error::ServiceError;
+use axum::Json;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
-use axum::Json;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -50,12 +50,10 @@ impl IntoResponse for ApiError {
             ),
             ApiError::BadRequest(_) => (StatusCode::BAD_REQUEST, "BAD_REQUEST", self.to_string()),
             ApiError::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", self.to_string()),
-            ApiError::UserNotFound => (StatusCode::UNAUTHORIZED, "USER_NOT_FOUND", self.to_string()),
-            ApiError::UserAlreadyRegistered => (
-                StatusCode::CONFLICT,
-                "CONFLICT",
-                self.to_string(),
-            ),
+            ApiError::UserNotFound => {
+                (StatusCode::UNAUTHORIZED, "USER_NOT_FOUND", self.to_string())
+            }
+            ApiError::UserAlreadyRegistered => (StatusCode::CONFLICT, "CONFLICT", self.to_string()),
         };
 
         (

@@ -1,6 +1,6 @@
-use rust_decimal::Decimal;
 use crate::model::AssetRate;
 use crate::model::ids::HoldingId;
+use rust_decimal::Decimal;
 
 #[derive(PartialEq, Debug)]
 pub struct Holding {
@@ -10,7 +10,12 @@ pub struct Holding {
     pub description: Option<String>,
 }
 impl Holding {
-    pub fn new(id: HoldingId, amount: Decimal, value_usd: Decimal, description: Option<String>) -> Self {
+    pub fn new(
+        id: HoldingId,
+        amount: Decimal,
+        value_usd: Decimal,
+        description: Option<String>,
+    ) -> Self {
         Self {
             id,
             amount,

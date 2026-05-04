@@ -1,22 +1,28 @@
 use crate::common::{AssetFixture, TestApp};
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
+use portfolio_tracker_backend::model::Asset;
 use serde_json::json;
 use tower::ServiceExt;
-use portfolio_tracker_backend::model::Asset;
 // Behavior testing is in /service
 
 #[tokio::test]
 async fn insert_asset_request_properly_decoded() {
-    let testapp = TestApp::new().await;   
-    let Asset { id: _, symbol, name, network, contract_address } = AssetFixture::jitosol_test_asset();
+    let testapp = TestApp::new().await;
+    let Asset {
+        id: _,
+        symbol,
+        name,
+        network,
+        contract_address,
+    } = AssetFixture::jitosol_test_asset();
 
     let expected_request = json!({
         "symbol": symbol.0.as_str(),
         "name": name.as_str(),
         "network": network.to_id(),
         "contract_address": contract_address.0.as_str(),
-    }); 
+    });
     let token = testapp.with_auth_user().await;
 
     let response = testapp

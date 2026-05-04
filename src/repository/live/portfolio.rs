@@ -199,7 +199,10 @@ impl PortfolioRepository for LivePortfolioRepository {
         Ok(())
     }
 
-    async fn get_historical_portfolio_values(&self, user_id: UserId) -> Result<Vec<PortfolioValueAt>, DBError> {
+    async fn get_historical_portfolio_values(
+        &self,
+        user_id: UserId,
+    ) -> Result<Vec<PortfolioValueAt>, DBError> {
         let values = sqlx::query_as!(
             PortfolioValueAt,
             "SELECT value_usd, at
@@ -207,8 +210,9 @@ impl PortfolioRepository for LivePortfolioRepository {
              WHERE user_id = $1
              ORDER BY at DESC",
             user_id.0
-        ).fetch_all(&self.pool)
-            .await?;
+        )
+        .fetch_all(&self.pool)
+        .await?;
         Ok(values)
     }
 }

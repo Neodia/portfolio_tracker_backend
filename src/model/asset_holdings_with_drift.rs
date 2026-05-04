@@ -1,7 +1,7 @@
-use rust_decimal::Decimal;
-use serde::Serialize;
 use crate::model::AssetRate;
 use crate::model::ids::HoldingId;
+use rust_decimal::Decimal;
+use serde::Serialize;
 
 #[derive(Serialize, PartialEq, Debug)]
 pub struct HoldingWithAllocation {

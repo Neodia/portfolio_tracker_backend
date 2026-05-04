@@ -1,7 +1,7 @@
 use crate::model::ids::AssetId;
 use crate::model::{AssetRate, Rate};
-use crate::repository::error::DBError;
 use crate::repository::RateRepository;
+use crate::repository::error::DBError;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use sqlx::{PgPool, PgTransaction};
@@ -57,7 +57,7 @@ impl RateRepository for LiveRateRepository {
         .into_iter()
         .map(|r| (r.asset_id, r))
         .collect();
-        
+
         Ok(rates)
     }
 }

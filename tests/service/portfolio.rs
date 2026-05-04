@@ -349,14 +349,16 @@ async fn portfolio_snapshots_computation_works() {
 
     assert_eq!(computation_result.number_of_users, 1);
     assert_eq!(computation_result.number_of_snapshots_events, 2);
-    
+
     let expected_first_dt_value = "1_700".d();
     let expected_second_dt_value = "2_160".d();
 
     // Ordered DESC on date
-    assert_eq!(user_historical_portfolio,
-    vec![
-        PortfolioValueAt::new(expected_second_dt_value, second_dt),
-        PortfolioValueAt::new(expected_first_dt_value, first_dt),
-    ])
+    assert_eq!(
+        user_historical_portfolio,
+        vec![
+            PortfolioValueAt::new(expected_second_dt_value, second_dt),
+            PortfolioValueAt::new(expected_first_dt_value, first_dt),
+        ]
+    )
 }

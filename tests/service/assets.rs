@@ -5,7 +5,13 @@ use wiremock::MockServer;
 #[tokio::test]
 async fn insert_and_get_asset_should_work() {
     let asset = AssetFixture::jitosol_test_asset();
-    let Asset { id: _, symbol, name, network, contract_address } = asset.clone();
+    let Asset {
+        id: _,
+        symbol,
+        name,
+        network,
+        contract_address,
+    } = asset.clone();
 
     let mock_server = MockServer::start().await;
     let TestApp {
