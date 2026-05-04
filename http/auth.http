@@ -1,0 +1,19 @@
+@base_url = localhost:3000
+
+### Register
+POST {{base_url}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "email@test.com",
+  "password": "my_very_strong_password"
+}
+
+### Login
+POST {{base_url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "email@test.com",
+  "password": "my_very_strong_password"
+}

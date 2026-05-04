@@ -1,0 +1,55 @@
+@base_url = localhost:3000
+@jwt_token = INSERT YOURS HERE AFTER REGISTERING/LOGGING IN
+@asset_id = INSERT YOURS HERE AFTER ADDING ONE IN assets.http
+@holding_id = INSERT YOURS HERE AFTER ADDING ONE WITH THE `INSERT HOLDING` CALL
+
+### Upsert Allocation
+PUT {{base_url}}/api/portfolio/allocations/{{asset_id}}
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "expected_allocation_pct": 0.2
+}
+
+### Delete Allocation
+DELETE {{base_url}}/api/portfolio/allocations/{{asset_id}}
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+### Insert Holding
+POST {{base_url}}/api/portfolio/holdings
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "asset_id": "{{asset_id}}",
+  "amount": 4.5,
+  "description": "Phantom Wallet !"
+}
+
+### Update Holding
+PATCH {{base_url}}/api/portfolio/holdings/{{holding_id}}
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "asset_id": "{{asset_id}}",
+  "amount": 4,
+  "description": "Phantom Wallet !"
+}
+
+### Delete Holding
+DELETE {{base_url}}/api/portfolio/holdings/{{holding_id}}
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+### Get Portfolio
+GET {{base_url}}/api/portfolio
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+### Refresh & Get Portfolio
+GET {{base_url}}/api/portfolio
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json

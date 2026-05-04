@@ -1,12 +1,14 @@
+use crate::api::ValidatedJson;
 use crate::api::auth::AuthenticatedUser;
 use crate::api::error::ApiError;
-use crate::api::model::{AddExpectedAllocationRequest, AddHoldingRequest, AddHoldingResponse, UpdateHoldingRequest};
-use crate::api::ValidatedJson;
+use crate::api::model::{
+    AddExpectedAllocationRequest, AddHoldingRequest, AddHoldingResponse, UpdateHoldingRequest,
+};
 use crate::appstate::AppState;
-use crate::model::ids::{AssetId, HoldingId};
 use crate::model::PortfolioResponse;
-use axum::extract::{Path, State};
+use crate::model::ids::{AssetId, HoldingId};
 use axum::Json;
+use axum::extract::{Path, State};
 
 pub async fn upsert_expected_asset_allocation(
     State(state): State<AppState>,

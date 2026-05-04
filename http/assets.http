@@ -1,0 +1,20 @@
+@base_url = localhost:3000
+@jwt_token = eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzZmMyZDA4My0zNjg5LTQ2ZjgtODc5OC0xZDUwNGYxOWM5YzYiLCJleHAiOjE3Nzc5OTgyNTcsImlhdCI6MTc3NzkxMTg1N30.ll6Btk9Id8DuLUD-AIvgbDbHQqc-dPPXyOmMTDxwnjg
+
+### Insert Asset
+# Network must be one of bitcoin, eth, solana, base, sonic, sui-network, mode, aptos, polygon_pos, linea, avax, or any new in src/model/Network::to_id
+POST {{base_url}}/api/assets
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "symbol": "JITOSOL",
+  "name": "Jito Staked SOL",
+  "network": "solana",
+  "contract_address": "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn"
+}
+
+### Get All
+GET {{base_url}}/api/assets
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json

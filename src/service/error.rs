@@ -32,9 +32,6 @@ impl From<AuthError> for ServiceError {
             AuthError::PasswordHashingFailed(err) => {
                 ServiceError::InternalServerError(err.to_string())
             }
-            AuthError::PasswordParsingFailed(err) => {
-                ServiceError::InternalServerError(err.to_string())
-            }
             AuthError::PasswordTaskFailed(err) => {
                 ServiceError::InternalServerError(err.to_string())
             }

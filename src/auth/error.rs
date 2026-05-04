@@ -14,8 +14,6 @@ pub enum AuthError {
     PasswordTaskFailed(String),
     #[error("Password hashing failed: {0}")]
     PasswordHashingFailed(String),
-    #[error("Password parsing failed: {0}")]
-    PasswordParsingFailed(String),
     #[error("Password verification failed")]
     PasswordVerificationFailed,
 }

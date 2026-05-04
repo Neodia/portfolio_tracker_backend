@@ -17,6 +17,7 @@ pub enum Network {
 }
 
 impl Network {
+    // Matches CG ids
     pub fn to_id(&self) -> &'static str {
         match self {
             Network::Bitcoin => "bitcoin",
