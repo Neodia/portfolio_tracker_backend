@@ -60,7 +60,7 @@ impl TryFrom<OutboxEventDTO> for OutboxEvent {
     type Error = DBError;
 
     fn try_from(dto: OutboxEventDTO) -> Result<Self, Self::Error> {
-        let event_type = OutboxEventType::from_str(&dto.event_type)
+        let event_type = OutboxEventType::opt_from_str(&dto.event_type)
             .ok_or_else(|| DBError::OutboxEventTypeDeserializeError(dto.event_type))?;
         Ok(Self {
             id: dto.id,

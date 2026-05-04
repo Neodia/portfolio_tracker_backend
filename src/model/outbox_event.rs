@@ -6,7 +6,7 @@ pub enum OutboxEventType {
     RatesPersisted,
 }
 impl OutboxEventType {
-    pub fn from_str(str: &str) -> Option<OutboxEventType> {
+    pub fn opt_from_str(str: &str) -> Option<OutboxEventType> {
         match str {
             "RatesPersisted" => Some(OutboxEventType::RatesPersisted),
             _ => None,
