@@ -1,6 +1,6 @@
-use chrono::{DateTime, Utc};
 use crate::model::ids::{AssetId, HoldingId, OutboxEventId};
-use crate::model::{Contract, OutboxEventType, Symbol};
+use crate::model::{Contract, Symbol};
+use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 
 pub struct BlockchainAssetDTO {

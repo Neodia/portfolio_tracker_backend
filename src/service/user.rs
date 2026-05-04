@@ -17,7 +17,7 @@ impl<R: UserRepository> UserService<R> {
         }
     }
     pub async fn register(&self, email: &str, raw_password: &str) -> Result<Token, ServiceError> {
-        let password_hash = hash_password(raw_password)?;
+        let password_hash = hash_password(raw_password).await?;
         let user = self
             .repository
             .insert_user(email, password_hash.as_str())
@@ -33,7 +33,7 @@ impl<R: UserRepository> UserService<R> {
             .await?
             .ok_or(ServiceError::UserNotFound(email.to_string()))?;
 
-        verify_password(raw_password, &user.password_hash)?;
+        verify_password(raw_password, &user.password_hash).await?;
 
         let token = create_token(user.id, self.jwt_secret.as_str())?;
         Ok(token)

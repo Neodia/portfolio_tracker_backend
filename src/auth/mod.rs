@@ -12,22 +12,33 @@ use axum::http::HeaderMap;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 
-pub fn hash_password(password: &str) -> Result<String, AuthError> {
-    let salt = SaltString::generate(&mut OsRng);
-    let hash = Argon2::default()
-        .hash_password(password.as_bytes(), &salt)
-        .map_err(|err| AuthError::PasswordHashingFailed(err.to_string()))?
-        .to_string();
-    Ok(hash)
+// CPU intensive, thus spawn_blocking
+pub async fn hash_password(password: &str) -> Result<String, AuthError> {
+    let password = password.to_string();
+    tokio::task::spawn_blocking(move || {
+        let salt = SaltString::generate(&mut OsRng);
+        Argon2::default()
+            .hash_password(password.as_bytes(), &salt)
+            .map(|hashed| hashed.to_string())
+            .map_err(|err| AuthError::PasswordHashingFailed(err.to_string()))
+    })
+    .await
+    .map_err(|err| AuthError::PasswordTaskFailed(err.to_string()))?
 }
 
-pub fn verify_password(password: &str, hash: &str) -> Result<(), AuthError> {
-    let parsed_hash =
-        PasswordHash::new(hash).map_err(|err| AuthError::PasswordHashingFailed(err.to_string()))?;
-    Argon2::default()
-        .verify_password(password.as_bytes(), &parsed_hash)
-        .map_err(|_| AuthError::PasswordVerificationFailed)?;
-    Ok(())
+// CPU intensive, thus spawn_blocking
+pub async fn verify_password(password: &str, hash: &str) -> Result<(), AuthError> {
+    let password = password.to_string();
+    let hash = hash.to_string();
+    tokio::task::spawn_blocking(move || {
+        let parsed_hash = PasswordHash::new(&hash)
+            .map_err(|err| AuthError::PasswordHashingFailed(err.to_string()))?;
+        Argon2::default()
+            .verify_password(password.as_bytes(), &parsed_hash)
+            .map_err(|_| AuthError::PasswordVerificationFailed)
+    })
+    .await
+    .map_err(|err| AuthError::PasswordTaskFailed(err.to_string()))?
 }
 
 pub fn create_token(user_id: UserId, secret: &str) -> Result<Token, AuthError> {

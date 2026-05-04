@@ -10,6 +10,8 @@ pub enum AuthError {
     #[error("Claims token is invalid")]
     ClaimsDecodeError,
 
+    #[error("Password task failed: {0}")]
+    PasswordTaskFailed(String),
     #[error("Password hashing failed: {0}")]
     PasswordHashingFailed(String),
     #[error("Password parsing failed: {0}")]
