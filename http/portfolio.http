@@ -50,6 +50,6 @@ Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 ### Refresh & Get Portfolio
-GET {{base_url}}/api/portfolio
+POST {{base_url}}/api/portfolio
 Authorization: Bearer {{jwt_token}}
 Content-Type: application/json

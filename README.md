@@ -316,8 +316,7 @@ needed for a proper prod setup.
     2. In an enterprise context, write access would be given only to SREs in specific cases which would prevent
        accidental
        updates with wrong values
-
-3:`PgPool::clone` uses `Arc` internally so it's safe to clone, same for the `CGClient` with `reqwest::Client`
+3. `PgPool::clone` uses `Arc` internally so it's safe to clone, same for the `CGClient` with `reqwest::Client`
 
 ### Infrastructure
 
