@@ -5,6 +5,14 @@ use chrono::{DateTime, Utc};
 pub enum OutboxEventType {
     RatesPersisted,
 }
+impl OutboxEventType {
+    pub fn from_str(str: &str) -> Option<OutboxEventType> {
+        match str {
+            "RatesPersisted" => Some(OutboxEventType::RatesPersisted),
+            _ => None,
+        }
+    }
+}
 
 pub struct OutboxEvent {
     pub id: OutboxEventId,

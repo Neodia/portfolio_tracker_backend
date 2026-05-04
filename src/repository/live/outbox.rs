@@ -2,6 +2,7 @@ use crate::model::ids::OutboxEventId;
 use crate::model::{OutboxEvent, OutboxEventType};
 use crate::repository::OutboxRepository;
 use crate::repository::error::DBError;
+use crate::repository::model::OutboxEventDTO;
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, PgTransaction};
 
@@ -32,11 +33,14 @@ impl OutboxRepository for LiveOutboxRepository {
 
     async fn get_pending_rates_persisted_events(&self) -> Result<Vec<OutboxEvent>, DBError> {
         let events = sqlx::query_as!(
-            OutboxEvent,
+            OutboxEventDTO,
             "SELECT id, event_type, created_at, handled_at FROM outbox WHERE handled_at IS NULL"
         )
         .fetch_all(&self.pool)
-        .await?;
+        .await?
+        .into_iter()
+        .map(TryFrom::try_from)
+        .collect::<Result<Vec<OutboxEvent>, _>>()?;
         Ok(events)
     }
 
@@ -52,10 +56,17 @@ impl OutboxRepository for LiveOutboxRepository {
         Ok(())
     }
 }
+impl TryFrom<OutboxEventDTO> for OutboxEvent {
+    type Error = DBError;
 
-impl From<String> for OutboxEventType {
-    fn from(_str: String) -> Self {
-        // This is ok because there's only 1 type for now. Change this with a proper DTO if adding net event types
-        OutboxEventType::RatesPersisted
+    fn try_from(dto: OutboxEventDTO) -> Result<Self, Self::Error> {
+        let event_type = OutboxEventType::from_str(&dto.event_type)
+            .ok_or_else(|| DBError::OutboxEventTypeDeserializeError(dto.event_type))?;
+        Ok(Self {
+            id: dto.id,
+            event_type,
+            created_at: dto.created_at,
+            handled_at: dto.handled_at,
+        })
     }
 }

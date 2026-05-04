@@ -50,6 +50,9 @@ impl From<DBError> for ServiceError {
             DBError::NetworkDeserializeError(err) => {
                 ServiceError::InternalServerError(err.to_string())
             }
+            DBError::OutboxEventTypeDeserializeError(err) => {
+                ServiceError::InternalServerError(err.to_string())
+            }
 
             // At startup, won't happen when running
             DBError::ConnectorError(_) => {
