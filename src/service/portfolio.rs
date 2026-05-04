@@ -202,11 +202,19 @@ impl PortfolioService {
                 let user_portfolio_value = user_holdings
                     .iter()
                     .map(|holding| {
-                        let asset_rate_at_event_date = latest_rates_at_event_date
+                        let asset_rate_at_event_date_opt = latest_rates_at_event_date
                             .get(&holding.asset_id)
-                            .map(|rate| rate.rate_usd)
-                            .unwrap_or_else(Decimal::zero);
+                            .map(|rate| rate.rate_usd);
 
+                        if asset_rate_at_event_date_opt.is_none() {
+                            tracing::warn!(
+                                asset_id=%holding.asset_id,
+                                at_date=%event.created_at,
+                                "Missing asset rate during portfolio snapshots. Defaulting to 0. If the asset did have a price at that point but it wasn't persisted, run the backfill job and recompute the portfolios.",
+                            )
+                        }
+
+                        let asset_rate_at_event_date = asset_rate_at_event_date_opt.unwrap_or(Decimal::zero());
                         holding.amount * asset_rate_at_event_date
                     })
                     .sum();
