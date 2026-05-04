@@ -61,9 +61,7 @@ CREATE TABLE IF NOT EXISTS outbox
 
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_current_holdings_user ON current_holdings (user_id);
-CREATE INDEX IF NOT EXISTS idx_current_holdings_updated ON current_holdings (updated_at);
-CREATE INDEX IF NOT EXISTS idx_rates_asset ON rates (asset_id);
-CREATE INDEX IF NOT EXISTS idx_rates_at ON rates (rate_at);
+CREATE INDEX IF NOT EXISTS idx_current_holdings_asset ON current_holdings (asset_id);
 CREATE INDEX IF NOT EXISTS idx_snapshots_user ON portfolio_snapshots (user_id);
 CREATE INDEX IF NOT EXISTS idx_snapshots_created ON portfolio_snapshots (at);
 CREATE INDEX IF NOT EXISTS idx_outbox_handled ON outbox (handled_at) WHERE handled_at IS NULL;

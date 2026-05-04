@@ -98,9 +98,10 @@ impl<C: CGClient> RatesService<C> {
         rates: &HashMap<(Network, Contract), BlockchainAssetRate>,
     ) -> Result<AssetRate, Asset> {
         let key = (asset.network, asset.contract_address.clone());
-        let rate = rates.get(&key);
-        let rate = rate.ok_or(asset.clone())?;
 
-        Ok(AssetRate::new(asset, rate.rate))
+        match rates.get(&key) {
+            Some(rate) => Ok(AssetRate::new(asset, rate.rate)),
+            None => Err(asset),
+        }
     }
 }

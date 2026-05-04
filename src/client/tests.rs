@@ -35,7 +35,7 @@ fn map_cg_to_domain_works() {
                     symbol: symbol.clone(),
                     name: name.clone(),
                     address: contract.clone(),
-                    price_usd: Some(rate_usd.clone()),
+                    price_usd: Some(rate_usd),
                 }
             },
             network
